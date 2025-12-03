@@ -1,2 +1,0 @@
-# submit-gemini
-ask question
