@@ -210,7 +210,11 @@ export function delUsers(id){
 	
 	return http.post('/users/del', {id: id});
 }
-export const uploadUrl = "http://localhost:8080/files/upload"; // 根据实际后端端口调整
+
+export function resetUserPwd(params){
+	return http.post('/users/resetPwd', params);
+}
+export const uploadUrl = "http://localhost:8080/files/upload";
 
 // 更新用户信息（包含头像）
 export const updateUserInfo = (data) => {

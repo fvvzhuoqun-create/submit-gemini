@@ -8,6 +8,7 @@ D:\Project\JAVA\daima\server\src\main\java\self\cases\teams\controller\BaseContr
 D:\Project\JAVA\daima\server\src\main\java\self\cases\teams\controller\IndexController.java
 D:\Project\JAVA\daima\server\src\main\java\self\cases\teams\entity\Members.java
 D:\Project\JAVA\daima\server\src\main\java\self\cases\teams\msg\PageData.java
+D:\Project\JAVA\daima\server\src\main\java\self\cases\teams\controller\FileController.java
 D:\Project\JAVA\daima\server\src\main\java\self\cases\teams\dao\PayLogsDao.java
 D:\Project\JAVA\daima\server\src\main\java\self\cases\teams\dao\TeamsDao.java
 D:\Project\JAVA\daima\server\src\main\java\self\cases\teams\service\impl\TeamsServiceImpl.java

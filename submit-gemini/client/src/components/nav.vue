@@ -15,7 +15,7 @@
               class="header-avatar"
               shape="square"
           ></el-avatar>
-          <span class="username">{{ this.$store.state.users.name || '用户' }}</span>
+          <span class="username">{{ (this.$store.state.users && this.$store.state.users.name) || '用户' }}</span>
           <i class="el-icon-arrow-down el-icon--right"></i>
         </div>
         <el-dropdown-menu slot="dropdown">
@@ -67,30 +67,27 @@
 <script>
 import { updateUserInfo } from "../api/index.js";
 
-// 后端服务的基础地址，用于拼接图片路径和上传地址
-// 请根据你的 SpringBoot 项目实际端口修改，通常是 8080 或 8888
-const API_BASE_URL = "http://localhost:8080";
+// 【修正】端口改为 9999
+const API_BASE_URL = "http://localhost:9999/teams";
 
 export default {
   data() {
     return {
       profileVisible: false,
-      currentUser: {}, // 用于编辑的用户信息副本
-      uploadActionUrl: API_BASE_URL + "/files/upload", // 上传接口地址
+      currentUser: {},
+      uploadActionUrl: API_BASE_URL + "/files/upload",
     };
   },
   computed: {
-    // 计算属性：获取当前登录用户的头像URL
     userAvatarUrl() {
-      const avatar = this.$store.state.users.avatar;
-      if (avatar) {
-        return API_BASE_URL + "/files/" + avatar;
+      const users = this.$store.state.users;
+      if (users && users.avatar) {
+        return API_BASE_URL + "/files/" + users.avatar;
       }
-      return ""; // 返回空字符串将显示 el-avatar 的默认图标
+      return "";
     }
   },
   methods: {
-    // 菜单指令处理
     handleCommand(command) {
       if (command === 'logout') {
         this.exit();
@@ -98,7 +95,6 @@ export default {
         this.openProfile();
       }
     },
-    // 退出登录
     exit() {
       this.$confirm('确定要退出登录吗?', '系统提示', {
         confirmButtonText: '确定',
@@ -107,52 +103,47 @@ export default {
       }).then(() => {
         sessionStorage.removeItem("token");
         this.$store.commit("setToken", null);
+        this.$store.commit("setMenus", null);
+        this.$store.commit("setUsers", {});
         this.$router.push("/");
       }).catch(() => {});
     },
-    // 打开个人中心，深拷贝用户信息防止直接修改 Vuex
     openProfile() {
-      this.currentUser = JSON.parse(JSON.stringify(this.$store.state.users));
+      if (this.$store.state.users) {
+        this.currentUser = JSON.parse(JSON.stringify(this.$store.state.users));
+      } else {
+        this.currentUser = {};
+      }
       this.profileVisible = true;
     },
-    // 图片上传前的校验
     beforeAvatarUpload(file) {
       const isJPG = file.type === 'image/jpeg' || file.type === 'image/png';
       const isLt2M = file.size / 1024 / 1024 < 2;
-
-      if (!isJPG) {
-        this.$message.error('上传头像图片只能是 JPG/PNG 格式!');
-      }
-      if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!');
-      }
+      if (!isJPG) this.$message.error('上传头像图片只能是 JPG/PNG 格式!');
+      if (!isLt2M) this.$message.error('上传头像图片大小不能超过 2MB!');
       return isJPG && isLt2M;
     },
-    // 上传成功回调
     handleAvatarSuccess(res) {
       if (res.code === 0) {
-        // res.data 应该是后端返回的文件名
         this.$set(this.currentUser, 'avatar', res.data);
         this.$message.success('头像上传成功');
       } else {
         this.$message.error(res.msg || '上传失败');
       }
     },
-    // 保存个人信息修改
     saveProfile() {
       updateUserInfo(this.currentUser).then(res => {
         if (res.code === 0) {
           this.$message.success("修改成功");
-          // 更新 Vuex 中的用户信息（注意：规范做法应在 store 中定义 mutation）
-          // 这里为了简便直接修改 state，确保界面即时刷新
-          Object.assign(this.$store.state.users, this.currentUser);
+          // 更新 Store
+          const updatedUser = { ...this.$store.state.users, ...this.currentUser };
+          this.$store.commit("setUsers", updatedUser);
           this.profileVisible = false;
         } else {
           this.$message.error(res.msg);
         }
       });
     },
-    // 获取图片完整访问路径
     getFileUrl(fileName) {
       if (!fileName) return '';
       return API_BASE_URL + "/files/" + fileName;
@@ -162,7 +153,6 @@ export default {
 </script>
 
 <style scoped>
-/* 顶部导航栏整体布局 */
 .fater-header {
   position: fixed;
   left: 0;
@@ -175,10 +165,9 @@ export default {
   z-index: 1000;
   padding: 0 24px;
   display: flex;
-  justify-content: space-between; /* 左右两端对齐 */
+  justify-content: space-between;
   align-items: center;
 }
-
 .fater-header-logo {
   font-size: 20px;
   font-weight: 700;
@@ -186,14 +175,10 @@ export default {
   display: flex;
   align-items: center;
 }
-
-/* 顶部右侧用户信息区容器 */
 .fater-header-user {
   display: flex;
   align-items: center;
 }
-
-/* 用户信息内部样式（鼠标悬停效果） */
 .user-info-inner {
   display: flex;
   align-items: center;
@@ -202,24 +187,19 @@ export default {
   border-radius: 4px;
   transition: background-color 0.3s;
 }
-
 .user-info-inner:hover {
   background-color: rgba(0, 0, 0, 0.025);
 }
-
 .header-avatar {
   margin-right: 8px;
-  background-color: #009999; /* 默认头像背景色 */
+  background-color: #009999;
 }
-
 .username {
   font-size: 14px;
   color: #606266;
   margin-right: 4px;
   font-weight: 500;
 }
-
-/* ------------------- 上传组件样式 ------------------- */
 .avatar-uploader .el-upload {
   border: 1px dashed #d9d9d9;
   border-radius: 6px;
@@ -228,11 +208,9 @@ export default {
   overflow: hidden;
   transition: border-color 0.3s;
 }
-
 .avatar-uploader .el-upload:hover {
   border-color: #009999;
 }
-
 .avatar-uploader-icon {
   font-size: 28px;
   color: #8c939d;
@@ -240,10 +218,9 @@ export default {
   height: 100px;
   line-height: 100px;
   text-align: center;
-  border: 1px dashed #c0ccda; /* 显式的虚线边框 */
+  border: 1px dashed #c0ccda;
   border-radius: 6px;
 }
-
 .avatar {
   width: 100px;
   height: 100px;

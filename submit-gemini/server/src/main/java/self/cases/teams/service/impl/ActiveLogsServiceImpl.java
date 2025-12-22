@@ -97,11 +97,17 @@ public class ActiveLogsServiceImpl implements ActiveLogsService {
             temp.put("createTime", activeLog.getCreateTime());
             temp.put("activeId", activeLog.getActiveId());
 
+            // 这里查询了用户详细信息
             Users user = usersDao.selectById(activeLog.getUserId());
+
             temp.put("userId", activeLog.getUserId());
             temp.put("userName", user.getName());
             temp.put("userGender", user.getGender());
             temp.put("userPhone", user.getPhone());
+
+            // 【新增】这行代码非常关键！将用户的头像放入返回结果中
+            // 前端使用的是 userAvatar 这个键
+            temp.put("userAvatar", user.getAvatar());
 
             resl.add(temp);
         }

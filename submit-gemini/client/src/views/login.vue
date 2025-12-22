@@ -30,8 +30,9 @@
                 type="primary" :loading="loading">
               立即登录 <i class="el-icon-right"></i>
             </el-button>
-            <div class="login-link">
+            <div class="login-link" style="display: flex; justify-content: space-between; padding: 0 10px;">
               <el-link @click="showAddWin()" :underline="false" style="color: #009999;">注册新账号</el-link>
+              <el-link @click="showResetWin()" :underline="false" style="color: #E6A23C;">忘记密码?</el-link>
             </div>
           </el-form-item>
         </el-form>
@@ -39,34 +40,34 @@
     </div>
 
     <el-dialog title="用户注册" width="700px" :modal-append-to-body="false" :visible.sync="showAddFlag" custom-class="custom-dialog">
-      <el-form label-width="90px" :model="usersForm">
+      <el-form label-width="90px" :model="usersForm" :rules="registerRules" ref="registerForm">
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="用户账号">
+            <el-form-item label="用户账号" prop="userName">
               <el-input v-model="usersForm.userName" placeholder="请输入用户账号..." autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="用户密码">
+            <el-form-item label="用户密码" prop="passWord">
               <el-input v-model="usersForm.passWord" type="password" placeholder="请输入用户密码..." autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="用户姓名">
+            <el-form-item label="用户姓名" prop="name">
               <el-input v-model="usersForm.name" placeholder="请输入用户姓名..." autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="用户年龄">
+            <el-form-item label="用户年龄" prop="age">
               <el-input v-model="usersForm.age" placeholder="请输入用户年龄..." autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="用户性别">
+            <el-form-item label="用户性别" prop="gender">
               <el-radio-group v-model="usersForm.gender">
                 <el-radio label="男"></el-radio>
                 <el-radio label="女"></el-radio>
@@ -74,12 +75,12 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="联系电话">
+            <el-form-item label="联系电话" prop="phone">
               <el-input v-model="usersForm.phone" placeholder="请输入联系电话..." autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="联系地址">
+        <el-form-item label="联系地址" prop="address">
           <el-input rows="3" type="textarea" v-model="usersForm.address" placeholder="请输入联系地址..." autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
@@ -88,6 +89,25 @@
         <el-button type="primary" @click="addInfo()">立即注册</el-button>
       </div>
     </el-dialog>
+
+    <el-dialog title="找回密码" width="500px" :modal-append-to-body="false" :visible.sync="showResetFlag" custom-class="custom-dialog">
+      <el-form label-width="90px" :model="resetForm" :rules="resetRules" ref="resetForm">
+        <el-form-item label="用户账号" prop="userName">
+          <el-input v-model="resetForm.userName" placeholder="请输入您的账号" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="预留手机" prop="phone">
+          <el-input v-model="resetForm.phone" placeholder="请输入注册时的手机号" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPassWord">
+          <el-input v-model="resetForm.newPassWord" type="password" placeholder="请输入新密码" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="showResetFlag = false">取 消</el-button>
+        <el-button type="primary" @click="submitReset()">确认重置</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -219,13 +239,14 @@
 
 <script>
 import initMenu from "../utils/menus.js";
-import { login, addUsers } from '../api/index.js'
+import { login, addUsers, resetUserPwd } from '../api/index.js' // 引入 resetUserPwd
 
 export default {
   data(){
     return {
       loading: false,
       showAddFlag: false,
+      showResetFlag: false, // 找回密码弹窗控制
       usersForm: {
         id: "",
         userName: "",
@@ -238,6 +259,12 @@ export default {
         type: 2,
         status: 1
       },
+      // 找回密码表单数据
+      resetForm: {
+        userName: "",
+        phone: "",
+        newPassWord: ""
+      },
       loginForm: {
         userName: '',
         passWord: ''
@@ -245,6 +272,21 @@ export default {
       rules: {
         userName: [{ required: true, message: '用户账号必须输入', trigger: 'blur' }],
         passWord: [{ required: true, message: '用户密码必须输入', trigger: 'blur' }],
+      },
+      // 注册校验规则：除地址外均为必填
+      registerRules: {
+        userName: [{ required: true, message: '请输入用户账号', trigger: 'blur' }],
+        passWord: [{ required: true, message: '请输入用户密码', trigger: 'blur' }],
+        name: [{ required: true, message: '请输入用户姓名', trigger: 'blur' }],
+        age: [{ required: true, message: '请输入用户年龄', trigger: 'blur' }],
+        gender: [{ required: true, message: '请选择性别', trigger: 'change' }],
+        phone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }]
+      },
+      // 找回密码校验规则
+      resetRules: {
+        userName: [{ required: true, message: '请输入账号', trigger: 'blur' }],
+        phone: [{ required: true, message: '请输入预留手机号', trigger: 'blur' }],
+        newPassWord: [{ required: true, message: '请输入新密码', trigger: 'blur' }]
       }
     }
   },
@@ -258,7 +300,7 @@ export default {
     window.removeEventListener('resize', this.resizeCanvas);
   },
   methods: {
-    // ---------------- 粒子特效逻辑 ----------------
+    // ---------------- 粒子特效逻辑 (保持不变) ----------------
     initParticles() {
       const canvas = document.getElementById('particle-canvas');
       if (!canvas) return;
@@ -346,9 +388,24 @@ export default {
         canvas.height = window.innerHeight;
       }
     },
-    // ---------------- 原有业务逻辑 ----------------
+    // ---------------- 业务逻辑更新 ----------------
     showAddWin(){
       this.showAddFlag = true;
+      // 重置注册表单
+      this.$nextTick(() => {
+        if(this.$refs['registerForm']) {
+          this.$refs['registerForm'].resetFields();
+        }
+      });
+    },
+    showResetWin() {
+      this.showResetFlag = true;
+      // 重置找回密码表单
+      this.$nextTick(() => {
+        if(this.$refs['resetForm']) {
+          this.$refs['resetForm'].resetFields();
+        }
+      });
     },
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
@@ -369,26 +426,55 @@ export default {
       });
     },
     addInfo(){
-      addUsers(this.usersForm).then(resp =>{
-        if(resp.code == 0){
-          this.$confirm('注册成功, 立即登陆?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'success'
-          }).then(() => {
-            login({userName: this.usersForm.userName, passWord: this.usersForm.passWord}).then(res => {
-              this.$store.commit('setToken', res.data);
-              sessionStorage.setItem("token", res.data);
-              initMenu(this.$router, this.$store);
-              this.$router.push('/index');
-            });
+      // 增加表单校验逻辑
+      this.$refs['registerForm'].validate((valid) => {
+        if (valid) {
+          addUsers(this.usersForm).then(resp =>{
+            if(resp.code == 0){
+              this.$confirm('注册成功, 立即登陆?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'success'
+              }).then(() => {
+                login({userName: this.usersForm.userName, passWord: this.usersForm.passWord}).then(res => {
+                  this.$store.commit('setToken', res.data);
+                  sessionStorage.setItem("token", res.data);
+                  initMenu(this.$router, this.$store);
+                  this.$router.push('/index');
+                });
+              });
+              this.showAddFlag = false;
+            }else{
+              this.$message({
+                message: resp.msg,
+                type: 'warning'
+              });
+            }
           });
-          this.showAddFlag = false;
-        }else{
-          this.$message({
-            message: resp.msg,
-            type: 'warning'
+        } else {
+          this.$message.warning("请填写除联系地址外的所有必填项");
+          return false;
+        }
+      });
+    },
+    // 提交密码重置
+    submitReset() {
+      this.$refs['resetForm'].validate((valid) => {
+        if (valid) {
+          resetUserPwd({
+            userName: this.resetForm.userName,
+            phone: this.resetForm.phone,
+            passWord: this.resetForm.newPassWord
+          }).then(resp => {
+            if (resp.code == 0) {
+              this.$message.success("密码重置成功，请使用新密码登录");
+              this.showResetFlag = false;
+            } else {
+              this.$message.warning(resp.msg);
+            }
           });
+        } else {
+          return false;
         }
       });
     }
