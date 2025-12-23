@@ -64,7 +64,13 @@
 			</div>
 		</el-card>
 
-		<el-dialog title="添加信息" width="600px" :visible.sync="showAddFlag">
+    <el-dialog
+        title="新增社团活动"
+        :visible.sync="showAddFlag"
+        width="700px"
+        :modal-append-to-body="false"
+        custom-class="custom-dialog"
+        append-to-body>
 			<el-form label-width="90px" :model="noticesForm">
 				<el-form-item label="通知标题">
 					<el-input v-model="noticesForm.title" 

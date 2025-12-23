@@ -1,191 +1,389 @@
 /* client/src/assets/style.css */
+/* 性能优化：为动画元素开启独立图层 */
+.fater-header, .fater-left, .fater-body, .el-card {
+    will-change: transform, opacity;
+    transform: translate3d(0, 0, 0); /* 强制开启硬件加速 */
+}
 
+/* --- 1. 核心变量定义 (Design Tokens) --- */
+:root {
+    /* 品牌主色：充满活力的蓝紫渐变 */
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --primary-color: #667eea;
+    --accent-color: #ff9a9e; /* 强调色：柔和粉红 */
+
+    /* 背景色体系 */
+    --bg-body: #f5f7fa;
+    --bg-glass: rgba(255, 255, 255, 0.85);
+    --bg-glass-heavy: rgba(255, 255, 255, 0.95);
+
+    /* 文字颜色 */
+    --text-main: #2d3748;
+    --text-regular: #718096;
+    --text-light: #a0aec0;
+
+    /* 阴影体系：更柔和、更弥散 */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 8px 24px rgba(149, 157, 165, 0.1);
+    --shadow-lg: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+    --shadow-float: 0 20px 40px -10px rgba(102, 126, 234, 0.3); /* 悬浮时的彩色投影 */
+
+    /* 间距与圆角 */
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-pill: 50px;
+}
+
+/* --- 2. 全局基础重置 --- */
 * {
     padding: 0;
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Nunito', 'PingFang SC', 'Microsoft YaHei', sans-serif; /* 选用更圆润的字体 */
     box-sizing: border-box;
+    outline: none;
 }
 
 body {
-    background-color: #f0f2f5; /* 更加柔和的浅灰背景 */
-    color: #303133;
+    background-color: var(--bg-body);
+    color: var(--text-main);
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
 }
 
-/* 顶部导航栏 - 白色 + 阴影 */
+/* --- 3. 布局重构 (Layout) --- */
+
+/* 顶部导航栏 - 悬浮玻璃条 */
 .fater-header {
     position: fixed;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: 60px !important;
-    line-height: 60px;
-    background-color: #ffffff;
-    box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+    left: 24px !important;
+    right: 24px !important;
+    top: 15px;
+    height: 70px !important;
+    line-height: 70px;
+    background: rgba(255, 255, 255, 0.9) !important; /* 增加一点不透明度 */
+    backdrop-filter: blur(10px); /* 降低模糊度 */
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
     z-index: 1000;
-    padding: 0 24px;
+    padding: 0 30px !important;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: all 0.3s ease;
 }
 
 .fater-header-logo {
-    font-size: 20px;
-    font-weight: 700;
-    color: #009999;
+    font-size: 22px;
+    font-weight: 800;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; /* 文字渐变 */
     display: flex;
     align-items: center;
-}
-
-/* 增加Logo前的装饰条 */
-.fater-header-logo::before {
-    content: '';
-    display: inline-block;
-    width: 4px;
-    height: 18px;
-    background-color: #009999;
-    margin-right: 10px;
-    border-radius: 2px;
+    letter-spacing: 1px;
 }
 
 .fater-header-user {
     cursor: pointer;
-    color: #606266;
-    font-size: 14px;
+    padding: 5px 15px;
+    border-radius: var(--radius-pill);
     transition: all 0.3s;
-    padding: 5px 10px;
-    border-radius: 4px;
 }
 .fater-header-user:hover {
-    color: #009999;
-    background-color: #f5f7fa;
+    background-color: rgba(102, 126, 234, 0.08);
 }
 
-/* 左侧菜单栏 */
+/* 左侧菜单栏 - 悬浮侧柱 */
 .fater-left {
     position: fixed;
-    top: 60px;
-    left: 0;
-    bottom: 0;
-    width: 220px !important;
-    background-color: #ffffff;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.02);
+    top: 100px; /* 避开Header */
+    left: 24px;
+    bottom: 24px;
+    width: 240px !important;
+    background: var(--bg-glass-heavy) !important;
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
     z-index: 900;
-    transition: width 0.3s;
+    padding: 20px 10px;
+    border-right: none !important; /* 移除默认边框 */
+    overflow: hidden;
 }
 
 .fater-left .el-menu {
     border-right: none;
-    padding-top: 8px;
+    background: transparent !important;
 }
 
-/* 菜单项选中样式优化 */
-.el-menu-item.is-active {
-    background-color: #e6f7f7 !important; /* 极浅的主色背景 */
-    color: #009999 !important;
-    border-right: 3px solid #009999;
-}
-
-/* 主内容区域 */
+/* 主内容区域 - 增加留白 */
 .fater-body {
     position: absolute;
-    left: 220px;
-    right: 0;
-    top: 60px;
-    bottom: 0;
-    background-color: #f0f2f5;
-    padding: 24px;
+    left: 280px; /* 调整间距 */
+    right: 24px;
+    top: 100px;
+    bottom: 24px;
+    background-color: transparent; /* 透出背景 */
+    padding: 0 !important;
     overflow-y: auto;
-    transition: left 0.3s;
+    overflow-x: hidden;
 }
 
-/* 面包屑导航 */
+/* 隐藏滚动条但保留功能 */
+.fater-body::-webkit-scrollbar {
+    width: 6px;
+}
+.fater-body::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.1);
+    border-radius: 3px;
+}
+
+/* --- 4. 组件样式深度定制 (Components) --- */
+
+/* 面包屑 - 隐形化 */
 .fater-body-breadcrumb {
-    margin-bottom: 24px;
-    padding: 16px 24px;
-    background-color: #fff;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    padding: 0 10px;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    font-size: 14px;
 }
 
-/* 统一卡片样式 - 更轻量 */
+/* 卡片 - 悬浮与大圆角 */
 .fater-body-show .el-card {
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05) !important;
-    transition: box-shadow 0.3s;
+    border: none !important;
+    border-radius: var(--radius-lg) !important;
+    background: #ffffff;
+    box-shadow: var(--shadow-md) !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 弹性动画 */
+    margin-bottom: 20px;
+    overflow: visible; /* 允许投影溢出 */
 }
 
 .fater-body-show .el-card:hover {
-    box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: var(--shadow-lg) !important;
 }
 
 .fater-body-show .el-card__header {
-    border-bottom: 1px solid #f0f2f5;
-    padding: 18px 24px;
-    font-weight: 600;
-    font-size: 16px;
-    color: #1f2f3d;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    padding: 20px 30px;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text-main);
 }
 
-/* 首页欢迎面板图片 */
+.fater-body-show .el-card__body {
+    padding: 30px;
+}
+
+/* 按钮 - 胶囊渐变 */
+.el-button {
+    border-radius: var(--radius-pill) !important;
+    font-weight: 600;
+    border: none;
+    padding: 12px 24px;
+    transition: all 0.3s;
+}
+
+.el-button--primary {
+    background: var(--primary-gradient) !important;
+    box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+}
+
+.el-button--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(118, 75, 162, 0.5);
+}
+
+.el-button--danger {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%) !important;
+    color: #d63031 !important;
+    box-shadow: 0 4px 15px rgba(255, 154, 158, 0.3);
+}
+
+/* 表格 - 极简风格 */
+.el-table {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background-color: #fff;
+}
+.el-table th {
+    background-color: #f8faff !important;
+    color: var(--text-regular);
+    font-weight: 700;
+    border-bottom: none !important;
+    padding: 15px 0;
+}
+.el-table td {
+    border-bottom: 1px solid #f0f2f5 !important;
+    padding: 15px 0;
+}
+.el-table--striped .el-table__body tr.el-table__row--striped td {
+    background: #fafcff;
+}
+
+/* 输入框 - 填充风格 */
+.el-input__inner {
+    background-color: #f4f6f8 !important;
+    border: 2px solid transparent !important;
+    border-radius: var(--radius-md) !important;
+    height: 44px;
+    line-height: 44px;
+    color: var(--text-main);
+    transition: all 0.3s;
+}
+
+.el-input__inner:focus {
+    background-color: #fff !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* 首页欢迎面板图片容器 */
 .fater-welcome-panel {
-    height: 320px;
-    margin-bottom: 24px;
-    border-radius: 8px;
-    /* 使用渐变叠加图片，更有质感 */
-    background-image: linear-gradient(to right, rgba(0,0,0,0.5), rgba(0,0,0,0)), url("./1.jpg");
+    height: 360px;
+    margin-bottom: 30px;
+    border-radius: var(--radius-lg);
+    background-image: linear-gradient(120deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.8)), url("./bg.jpg"); /* 混合模式 */
     background-size: cover;
     background-position: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: var(--shadow-float);
     display: flex;
     align-items: center;
-    padding-left: 40px;
+    padding-left: 60px;
     color: white;
-    font-size: 24px;
-    font-weight: bold;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    font-size: 32px;
+    font-weight: 800;
+    position: relative;
+    overflow: hidden;
 }
 
-/* 统计面板 */
+/* 装饰性光斑 */
+.fater-welcome-panel::after {
+    content: '';
+    position: absolute;
+    right: -50px;
+    top: -50px;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    filter: blur(40px);
+}
+
+/* 统计面板 - 极简卡片 */
 .fater-index-panle {
-    padding: 20px;
+    padding: 30px 20px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    transition: transform 0.3s;
-}
-.fater-index-panle:hover {
-    transform: translateY(-5px);
+    background: #fff;
+    border-radius: var(--radius-lg);
+    transition: all 0.3s;
+    cursor: default;
 }
 
 .fater-index-panle-num {
-    font-size: 32px;
-    font-weight: bold;
-    color: #009999;
-    margin-bottom: 10px;
-    font-family: "Helvetica Neue", sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+    font-family: 'Poppins', sans-serif;
 }
 .fater-index-panle-desc {
     font-size: 14px;
-    color: #909399;
-}
-
-/* 全局按钮优化 */
-.el-button--primary {
-    background-color: #009999;
-    border-color: #009999;
-}
-.el-button--primary:hover, .el-button--primary:focus {
-    background-color: #26b2b2;
-    border-color: #26b2b2;
-}
-
-/* 表格头部样式 */
-.el-table th {
-    background-color: #fafafa !important;
-    color: #333;
     font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- 5. 全局动画 (Animations) --- */
+
+/* 页面内容进场动画 */
+.fater-body > div {
+    animation: fadeUp 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+@keyframes fadeUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* --- 移动端适配 (Mobile Responsive) --- */
+@media screen and (max-width: 768px) {
+    /* 1. 隐藏侧边栏 (后续可改为点击按钮显示) */
+    .fater-left {
+        display: none !important;
+        /* 如果要做抽屉效果，这里需要配合 JS 修改，暂时先隐藏 */
+    }
+
+    /* 2. 顶部导航栏适配 */
+    .fater-header {
+        left: 0 !important;
+        right: 0 !important;
+        padding: 0 15px !important;
+        width: 100% !important;
+        border-radius: 0 !important; /* 手机上不需要圆角 */
+        top: 0 !important;
+    }
+
+    /* Logo 缩小字号，防止换行 */
+    .fater-header-logo {
+        font-size: 16px;
+    }
+    .fater-header-logo img {
+        height: 32px !important; /* Logo图片缩小 */
+    }
+    .brand-sub-text {
+        display: none; /* 手机上空间不够，隐藏副标题 */
+    }
+
+    /* 3. 主内容区域铺满全屏 */
+    .fater-body {
+        left: 0 !important;
+        top: 70px !important; /* 避开 Header */
+        width: 100% !important;
+        padding: 15px !important;
+    }
+
+    /* 4. 统计面板 (Index.vue) 改为单列 */
+    .fater-index-panle {
+        margin-bottom: 15px;
+    }
+
+    /* 5. 欢迎面板高度自适应 */
+    .fater-welcome-panel {
+        height: auto !important;
+        flex-direction: column; /* 上下排列 */
+        padding: 30px 20px !important;
+        text-align: center;
+    }
+    .slogan-container {
+        text-align: center !important;
+        margin-top: 20px;
+    }
+    .slogan-sub {
+        justify-content: center !important;
+    }
+
+    /* 6. 强制所有 Element UI 弹窗宽度为 90% */
+    .el-dialog {
+        width: 90% !important;
+        margin-top: 10vh !important;
+    }
+
+    /* 7. 表格适配：允许横向滚动 */
+    .el-table {
+        overflow-x: auto;
+    }
 }

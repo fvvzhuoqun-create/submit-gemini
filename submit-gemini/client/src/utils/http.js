@@ -8,7 +8,7 @@ axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
 
 const service = axios.create({
 	// withCredentials: true,
-	baseURL: 'http://localhost:9999/teams',
+	baseURL: 'http://49.233.207.141:9999/teams',
 	timeout: 15000 // 请求超时时间
 })
 

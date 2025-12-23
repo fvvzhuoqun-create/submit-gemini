@@ -105,7 +105,13 @@
       </div>
     </el-card>
 
-    <el-dialog title="发布活动" :fullscreen="true" :visible.sync="showAddFlag">
+    <el-dialog
+        title="新增社团活动"
+        :visible.sync="showAddFlag"
+        width="700px"
+        :modal-append-to-body="false"
+        custom-class="custom-dialog"
+        append-to-body>
       <el-form label-width="90px" :model="activitiesForm">
         <el-form-item label="活动名称">
           <el-input v-model="activitiesForm.name" placeholder="请输入活动名称…" autocomplete="off"></el-input>

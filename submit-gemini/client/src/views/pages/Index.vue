@@ -2,7 +2,24 @@
     <div class="fater-body-show">
         <el-row :gutter="15">
             <el-col :span="16">
-                <div class="fater-welcome-panel"></div>
+              <div class="fater-welcome-panel">
+                <div class="welcome-info">
+                  <div class="welcome-hello">
+                    <span>Hello, {{ this.$store.state.users.name }}</span>
+                    <span class="wave-emoji">👋</span>
+                  </div>
+                  <div class="welcome-date">今天是 {{ currentDate }}，祝您拥有美好的一天</div>
+                </div>
+
+                <div class="slogan-container">
+                  <div class="slogan-main">学习不仅是读书！</div>
+                  <div class="slogan-sub">
+                    <span class="line"></span>
+                    <span>LEARNING IS MORE THAN READING</span>
+                    <span class="line"></span>
+                  </div>
+                </div>
+              </div>
             </el-col>
             <el-col :span="8">
                 <el-card shadow="never">
