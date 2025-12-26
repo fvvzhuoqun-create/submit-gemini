@@ -117,19 +117,6 @@
           <el-input v-model="activitiesForm.name" placeholder="请输入活动名称…" autocomplete="off"></el-input>
         </el-form-item>
 
-        <el-form-item label="宣传素材">
-          <el-upload
-              class="upload-demo"
-              :action="uploadActionUrl"
-              :on-success="handleUploadSuccess"
-              :limit="1"
-              :file-list="fileList"
-              list-type="picture">
-            <el-button size="small" type="primary" icon="el-icon-upload">点击上传图片或视频</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件或mp4视频，且不超过10MB</div>
-          </el-upload>
-        </el-form-item>
-
         <el-form-item label="活动时间">
           <el-date-picker style="width:100%;" value-format="yyyy-MM-dd HH:mm:ss"
                           v-model="activitiesForm.activeTime"
@@ -169,8 +156,7 @@ import {
   delActivities
 } from "../../api";
 
-// 统一配置 API 地址
-const API_BASE_URL = "http://localhost:9999/teams";
+const API_BASE_URL = "http://49.233.207.141:9999/teams";
 
 export default {
   data() {
@@ -185,8 +171,7 @@ export default {
       totalInfo: 0,
       loading: true,
       showAddFlag: false,
-      uploadActionUrl: API_BASE_URL + "/files/upload", // 上传地址
-      fileList: [], // 上传文件列表回显
+      // 【已删除】：删除了 uploadActionUrl 和 fileList
       qryForm: {
         token: this.$store.state.token,
         teamName: "",
@@ -201,40 +186,27 @@ export default {
         total: 1,
         activeTime: "",
         teamId: "",
-        mediaFile: "" // 【新增】
+        mediaFile: "" // 保留字段，防止后端报错，但默认为空
       }
     }
   },
   methods: {
-    // 获取完整文件路径
     getFileUrl(fileName) {
       if (!fileName) return '';
       return API_BASE_URL + "/files/" + fileName;
     },
-    // 判断是否图片
     isImage(fileName) {
       return /\.(jpeg|jpg|png|gif)$/i.test(fileName);
     },
-    // 判断是否视频
     isVideo(fileName) {
       return /\.(mp4|webm|ogg)$/i.test(fileName);
     },
-    // 上传成功回调
-    handleUploadSuccess(res) {
-      if (res.code === 0) {
-        this.activitiesForm.mediaFile = res.data;
-        this.$message.success("上传成功");
-      } else {
-        this.$message.error("上传失败");
-      }
-    },
+    // 【已删除】：删除了 handleUploadSuccess 方法
 
     getActivePeople(activeId){
       getActiveLogs(activeId).then(resp =>{
         this.activeLogs = [];
         this.activeLogs = resp.data;
-        // 注意：这里 activeLogs 中的每一项 Map 必须包含 'userAvatar' 字段才能显示头像
-        // 如果不显示，请检查后端 ActiveLogsDao/Mapper.xml 中的 SQL 关联查询
       });
     },
 
@@ -276,7 +248,7 @@ export default {
         teamId: "",
         mediaFile: ""
       };
-      this.fileList = [];
+      // 【已删除】：fileList 清空逻辑也不需要了
     },
     showAddWin() {
       this.initForm();

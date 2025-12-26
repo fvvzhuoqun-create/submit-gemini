@@ -6,7 +6,6 @@ import self.cases.teams.msg.R;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URLEncoder;
 import java.util.UUID;
 
 @RestController
@@ -31,7 +30,12 @@ public class FileController {
         }
 
         String originalFilename = file.getOriginalFilename();
-        String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String suffix = "";
+        // 防止文件名为空导致的异常
+        if (originalFilename != null && originalFilename.contains(".")) {
+            suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+
         String fileName = UUID.randomUUID().toString() + suffix;
 
         File dest = new File(BASE_PATH + fileName);
@@ -43,23 +47,27 @@ public class FileController {
 
     /**
      * 图片回显/下载
+     * 【已注释】
+     * 原因：已在 Application.java 中配置 addResourceHandlers 接管静态资源访问。
+     * 这里的代码会强制所有文件为 image/jpeg 且不支持 Range 请求（导致视频无法拖动），
+     * 所以必须注释掉，避免冲突。
      */
-    @GetMapping("/{fileName}")
-    public void download(@PathVariable String fileName, HttpServletResponse response) throws IOException {
-        File file = new File(BASE_PATH + fileName);
-        if (!file.exists()) {
-            return;
-        }
-
-        FileInputStream fis = new FileInputStream(file);
-        response.setContentType("image/jpeg"); // 这里简单处理，实际可根据后缀判断
-
-        OutputStream os = response.getOutputStream();
-        byte[] buffer = new byte[1024];
-        int len;
-        while ((len = fis.read(buffer)) != -1) {
-            os.write(buffer, 0, len);
-        }
-        fis.close();
-    }
+//    @GetMapping("/{fileName}")
+//    public void download(@PathVariable String fileName, HttpServletResponse response) throws IOException {
+//        File file = new File(BASE_PATH + fileName);
+//        if (!file.exists()) {
+//            return;
+//        }
+//
+//        FileInputStream fis = new FileInputStream(file);
+//        response.setContentType("image/jpeg"); // 这里简单处理，实际可根据后缀判断
+//
+//        OutputStream os = response.getOutputStream();
+//        byte[] buffer = new byte[1024];
+//        int len;
+//        while ((len = fis.read(buffer)) != -1) {
+//            os.write(buffer, 0, len);
+//        }
+//        fis.close();
+//    }
 }

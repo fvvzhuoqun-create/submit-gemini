@@ -59,7 +59,12 @@ public interface ActivitiesDao extends BaseMapper<Activities> {
             "a.active_time activeTime, a.team_id teamId, t.name teamName " +
             "FROM activities a, teams t " +
             "<where>" +
-            "a.team_id = t.id AND a.team_id IN (SELECT team_id FROM members WHERE user_id = #{memId}) " +
+            "a.team_id = t.id " +
+            "AND ( " +
+            "   a.team_id IN (SELECT team_id FROM members WHERE user_id = #{memId}) " +
+            "   OR " +
+            "   t.manager = #{memId} " +
+            ") " +
             "<if test='teamName != null and teamName.trim() != &quot;&quot; '>" +
             "AND t.name LIKE CONCAT('%', #{teamName}, '%') " +
             "</if>" +
