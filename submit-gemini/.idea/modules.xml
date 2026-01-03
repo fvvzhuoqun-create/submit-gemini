@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/daima.iml" filepath="$PROJECT_DIR$/.idea/daima.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/DrugSynergy-GPT.iml" filepath="$PROJECT_DIR$/.idea/DrugSynergy-GPT.iml" />
     </modules>
   </component>
 </project>
