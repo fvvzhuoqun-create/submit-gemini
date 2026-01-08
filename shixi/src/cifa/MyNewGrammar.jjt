@@ -1,6 +1,3 @@
-/**
- * JJTree template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
- */
 options
 {
   static = false;
@@ -10,6 +7,7 @@ PARSER_BEGIN(MyNewGrammar)
 package cifa;
 import util.*;
 import java.io.*;
+import java.util.ArrayList; // 引入 ArrayList 用于 switch 的 break 链回填
 
 public class MyNewGrammar
 {
@@ -34,20 +32,24 @@ public class MyNewGrammar
       FileWriter fos1 = new FileWriter(outFile1);
       File outFile2 = new File("yuyi.txt");
       FileWriter fos2 = new FileWriter(outFile2);
+
+      // 建议只使用一个 reader，这里保留你的原逻辑以防改动过大
       FileReader reader = new FileReader("input2.txt");
       FileReader reader1 = new FileReader("input2.txt");
+
       char [] buffer = new char [10000];
       MyNewGrammar parser = new MyNewGrammar(reader);
+
       // 词法分析
       Token t = null;
       SimpleCharStream stream = new SimpleCharStream(reader1);
       MyNewGrammarTokenManager tmg = new MyNewGrammarTokenManager(stream);
       t = tmg.getNextToken();
-     // System.out.println("词法分析:\n");
-      System.out.println("\u8bcd\u6cd5\u5206\u6790:\n");//词法分析：
-      String st = new String("\u8bcd\u6cd5\u5206\u6790:\n");//词法分析：
+
+      System.out.println("\u8bcd\u6cd5\u5206\u6790:\n");//词法分析
+      String st = new String("\u8bcd\u6cd5\u5206\u6790:\n");
       buffer = st.toCharArray();
-      fos.write(buffer); // 写入文件
+      fos.write(buffer);
       while (t.kind != 0)
       {
         System.out.println(t.kind + " --- " + t.image);
@@ -59,34 +61,38 @@ public class MyNewGrammar
       System.out.println("\n");
 
       // 语法分析
-      System.out.println("\u8bed\u6cd5\u5206\u6790: ");//语法分析：
+      System.out.println("\u8bed\u6cd5\u5206\u6790: ");//语法分析
       st = new String("\n\u8bed\u6cd5\u5206\u6790:\n");
       SimpleNode n = parser.Start();
       n.dump(" ", buffer, fos1);
       buffer = st.toCharArray();
-     fos1.write(buffer); // 写入文件
-     
+      fos1.write(buffer);
+
       st = new String("Thank you.\n\n");
       buffer = st.toCharArray();
-      fos1.write(buffer); // 写入文件
+      fos1.write(buffer);
       System.out.println("Thank you.");
       System.out.println("\n");
-      
+
       // 语义分析
       System.out.println("\u8bed\u4e49\u5206\u6790: \n");//语义分析
       st = new String("\u8bed\u4e49\u5206\u6790: \n");
       buffer = st.toCharArray();
-      fos2.write(buffer); // 写入文件
+      fos2.write(buffer);
       parser.printQTTable(buffer, fos2);
+
       // 关闭并保存文件
       fos2.close();
       fos.close();
       fos1.close();
+      reader.close();
+      reader1.close();
     }
     catch (Exception e)
     {
       System.out.println("Oops.");
       System.out.println(e.getMessage());
+      e.printStackTrace();
     }
   }
 }
@@ -187,7 +193,7 @@ TOKEN :
 | < #_ESCAPED_CHAR : "\\" ~[ ] >
 | < #_TERM_START_CHAR :
     (
-      ~[ " ", "\t", "\n", "\r", "+", "-", "!", "(", ")", ":", "^", 
+      ~[ " ", "\t", "\n", "\r", "+", "-", "!", "(", ")", ":", "^",
       "[", "]", "\"", "{", "}", "~", "*", "?", "\\" ]
     | < _ESCAPED_CHAR >
     ) >
@@ -209,90 +215,37 @@ TOKEN :
 
 TOKEN :
 {
-  < OR :
-    "or"
-  | "OR" >
-| 
-  < AND :
-    "and"
-  | "AND" >
-| 
-  < FROM :
-    "from"
-  | "FROM" >
-| 
-  < DELETE :
-    "delete"
-  | "DELETE" >
-| 
-  < WHERE :
-    (
-      "where"
-    | "WHERE"
-    ) >
-| 
-  < INSERT :
-    (
-      "insert"
-    | "INSERT"
-    ) >
-| 
-  < INTO :
-    "into"
-  | "INTO" >
-| 
-  < VALUES :
-    "values"
-  | "VALUES" >
-| 
-  < SELECT :
-    "select"
-  | "SELECT" >
-| 
-  < UPDATE :
-    "update"
-  | "UPDATE" >
-| 
-  < SET :
-    "set"
-  | "SET" >
-| 
-  < CONTINUE : "continue" >
-| 
-  < VOLATILE : "volatile" >
-| 
-  < REGISTER : "register" >
-| 
-  < UNSIGNED : "unsigned" >
-| 
-  < TYPEDEF : "typedef" >
-| 
-  < SIZEOF : "sizeof" >
-| 
-  < RETURN : "return" >
-| 
-  < EXTERN : "extern" >
-| 
-  < STRUCT : "struct" >
-| 
-  < STATIC : "static" >
-| 
-  < SIGNED : "signed" >
-| 
-  < BREAK : "break" >
-| 
-  < UNION : "union" >
-| 
-  < CONST : "const" >
-| 
-  < ENUM : "enum" >
-| 
-  < AUTO : "auto" >
-| 
-  < GOTO : "goto" >
-| 
-  < SQL : "sql" >
+  < OR : "or" | "OR" >
+| < AND : "and" | "AND" >
+| < FROM : "from" | "FROM" >
+| < DELETE : "delete" | "DELETE" >
+| < WHERE : "where" | "WHERE" >
+| < INSERT : "insert" | "INSERT" >
+| < INTO : "into" | "INTO" >
+| < VALUES : "values" | "VALUES" >
+| < SELECT : "select" | "SELECT" >
+| < UPDATE : "update" | "UPDATE" >
+| < SET : "set" | "SET" >
+| < CONTINUE : "continue" >
+| < VOLATILE : "volatile" >
+| < REGISTER : "register" >
+| < UNSIGNED : "unsigned" >
+| < TYPEDEF : "typedef" >
+| < SIZEOF : "sizeof" >
+| < RETURN : "return" >
+| < EXTERN : "extern" >
+| < STRUCT : "struct" >
+| < STATIC : "static" >
+| < SIGNED : "signed" >
+| < BREAK : "break" >
+| < UNION : "union" >
+| < CONST : "const" >
+| < ENUM : "enum" >
+| < AUTO : "auto" >
+| < GOTO : "goto" >
+| < SQL : "sql" >
 }
+
 TOKEN :
 {
   < LT : "<" >
@@ -317,8 +270,6 @@ TOKEN : /*界符*/
 | < YOUKUANGHAO : "]" >
 | < DENGYUHAO : "=" >
 | < JINHAO : "#" >
-// | < GANTAIHAO : "!" >
-// | < HUOYUNSUANFU : "|" >
 | < XIAOSHUDIAN : "." >
 }
 
@@ -358,38 +309,14 @@ String Type() :
   Token t = null;
 }
 {
-  t = < INT >
-  {
-    return t.image;
-  }
-| t = < DOUBLE >
-  {
-    return t.image;
-  }
-| t = < VOID >
-  {
-    return t.image;
-  }
-| t = < FLOAT >
-  {
-    return t.image;
-  }
-| t = < CHAR >
-  {
-    return t.image;
-  }
-| t = < LONG >
-  {
-    return t.image;
-  }
-| t = < SHORT >
-  {
-    return t.image;
-  }
-  | t = < BOOL >
-  {
-    return t.image;
-  }
+  t = < INT > { return t.image; }
+| t = < DOUBLE > { return t.image; }
+| t = < VOID > { return t.image; }
+| t = < FLOAT > { return t.image; }
+| t = < CHAR > { return t.image; }
+| t = < LONG > { return t.image; }
+| t = < SHORT > { return t.image; }
+| t = < BOOL > { return t.image; }
 }
 
 void SentenceBlock() :
@@ -436,7 +363,7 @@ void StatementSentence() :
   String ty = null;
 }
 {
-  ty = Type() 
+  ty = Type()
   to = Identifier()
   {
     va = new Variable(ty, to);
@@ -444,7 +371,7 @@ void StatementSentence() :
     ST.setVariableTable(Vt);
   }
   (
-    < DH > 
+    < DH >
     to = Identifier()
     {
       va = new Variable(ty, to);
@@ -459,8 +386,6 @@ void AssignmentSentence() :
   String str2 = null;
   String str1 = null;
   Token op, to;
- 
-  
   Variable va = new Variable();
 }
 {
@@ -472,11 +397,10 @@ void AssignmentSentence() :
     va = Vt.variableExist(str1);
     if (va == null)
     {
-      
       System.out.println("\u53d8\u91cf" + str1 + "\u672a\u5b9a\u4e49");
     }
   }
-  op = "=" 
+  op = "="
   str2 = Expression()
   {
     QTInfo qt = new QTInfo(op.image, str2, "_", str1);
@@ -503,7 +427,7 @@ void AssignmentSentence2() :
       System.out.println("\u53d8\u91cf" + str1 + "\u672a\u5b9a\u4e49");
     }
   }
-  op = "=" 
+  op = "="
   str2 = Expression()
   {
     QTInfo qt = new QTInfo(op.image, str2, "_", str1);
@@ -511,13 +435,15 @@ void AssignmentSentence2() :
   }
 }
 
+// 修改点：使用 Booler() 替换 Condition() 以支持 && 和 ||
+// 修改点：修复 ELSE 回填的索引错误
 void ConditionSentence() :
 {
   ConditionValue cValue = new ConditionValue();
   int index;
 }
 {
-  < IF > "(" cValue = Condition() ")"
+  < IF > "(" cValue = Booler() ")"
   {
     cValue.backpatchTrueChain(QTInfo.size + 1);
   }
@@ -529,14 +455,18 @@ void ConditionSentence() :
     LOOKAHEAD(1)
     < ELSE >
     {
+      // 生成跳过 ELSE 块的跳转指令
       QTInfo qtInfo = new QTInfo("j", "_", "_", "F");
-      index = QTInfo.size;
+      index = QTInfo.size; // 记录这条跳转指令的索引（list 下标）
       qtList.addQTInfo(qtInfo);
+
+      // 这里的 FalseChain 是 IF 条件失败时跳过来的位置，应该跳到 ELSE 块开始（即当前位置+1）
       cValue.backpatchFalseChain(QTInfo.size + 1);
     }
     SentenceBlock()
     {
-      qtInfo = qtList.get(index - 1);
+      // 回填跳过 ELSE 块的那个指令，使其跳到整个 IF-ELSE 之后
+      qtInfo = qtList.get(index); // 修正：应该是 index，不是 index-1
       qtInfo.setResult(QTInfo.size + 1);
     }
   )?
@@ -553,7 +483,6 @@ void LoopSentence() :
     index = QTInfo.size + 1;
   }
   cValue = Booler() ")"
- // cValue = Condition() ")"
   {
     cValue.backpatchTrueChain(QTInfo.size + 1);
   }
@@ -604,19 +533,7 @@ ConditionValue Condition() :
    QTInfo qtInfo = new QTInfo("j", "_", "_", "F");
     qtList.addQTInfo(qtInfo);
     cValue.mergeFalse(qtInfo);
- //    QTInfo qtInfo = new QTInfo("j", e1, e2, "T");
-  //  qtList.addQTInfo(qtInfo);
-   // cValue.mergeTrue(qtInfo);
-    
   }
-  
- /* {
-   
-     QTInfo qtInfo = new QTInfo("j", e1, e2, "T");
-    qtList.addQTInfo(qtInfo);
-    cValue.mergeTrue(qtInfo);
-  }*/
-  
   {
     return cValue;
   }
@@ -627,35 +544,10 @@ Token Rop() :
   Token t = null;
 }
 {
-  t = < LT >
-  {
-    return t;
-  }
-| t = < LE >
-  {
-    return t;
-  }
-| t = < GT >
-  {
-    return t;
-  }
-| t = < GE >
-  {
-    return t;
-  }
- /*  | t = < HUO >
-  {
-    return t;
-  }
-| t = < YU >
-  {
-    return t;
-  }
- 
-  | t = < GANTANHAO >
-  {
-    return t;
-  }*/
+  t = < LT > { return t; }
+| t = < LE > { return t; }
+| t = < GT > { return t; }
+| t = < GE > { return t; }
 }
 
 String Expression() :
@@ -847,6 +739,7 @@ ConditionValue Booler() :
   }
 }
 
+// 修改点：添加 break 支持
 void SwitchSentence() :
 {
   ConditionValue Value = new ConditionValue();
@@ -855,15 +748,19 @@ void SwitchSentence() :
   int qtSize = QTInfo.size;
   Token tok;
   Token tokx;
+
+  // 用于存储 break 指令的索引列表
+  ArrayList<Integer> breakChain = new ArrayList<Integer>();
+  QTInfo breakJump;
 }
 {
-  < SWITCH > 
-  < LB > 
-  tok = < IDENTIFIER > 
-  < RB > 
+  < SWITCH >
+  < LB >
+  tok = < IDENTIFIER >
+  < RB >
   < ZUOHUAKUO >
   (
-    < CASE > 
+    < CASE >
     tokx = < INTEGER_LITERAL >
     {
       QTInfo qt1;
@@ -888,16 +785,28 @@ void SwitchSentence() :
     (
       SentenceBlock()
     )*
-    < BREAK > 
+    < BREAK >
+    {
+       // 生成无条件跳转，跳出 switch
+       breakJump = new QTInfo("j", "_", "_", "F");
+       breakChain.add(QTInfo.size); // 记录当前指令位置
+       qtList.addQTInfo(breakJump);
+    }
     < SP >
   )*
   [
-    < DFLT > < COLON > 
-    [ SentenceBlock() ] 
-    < BREAK > 
+    < DFLT > < COLON >
+    [ SentenceBlock() ]
+    < BREAK >
     < SP >
   ]
   < YOUHUAKUO >
+  {
+     // 回填所有的 break 跳转到 switch 结束位置
+     for(Integer i : breakChain) {
+        qtList.get(i).setResult(QTInfo.size + 1);
+     }
+  }
 }
 
 void DoWhile() :
@@ -913,10 +822,10 @@ void DoWhile() :
   (
     SentenceBlock()
   )
-  < WHILE > 
-  < LB > 
-  Value = Booler() 
-  < RB > 
+  < WHILE >
+  < LB >
+  Value = Booler()
+  < RB >
   < SP >
   {
     Value.backpatchTrueChain(QTSize + 1);
@@ -926,34 +835,65 @@ void DoWhile() :
   }
 }
 
+// 修改点：修复 For 循环执行顺序
+// 顺序调整为：Init -> [Label Condition] -> Booler -> Jump False End -> Jump BodyStart -> [Label Increment] -> Increment -> Jump Condition -> [Label BodyStart] -> Body -> Jump Increment -> [Label End]
 void forSentence() :
 {
   ConditionValue cValue = new ConditionValue();
-  int index;
+  int conditionIndex;
+  int incrementIndex;
+  int bodyIndex;
+  QTInfo jumpToBody;
+  QTInfo jumpToIncrement;
+  QTInfo jumpToCondition;
 }
 {
   < FOR > "("
-  {
-    index = QTInfo.size + 1;
-  }
   (
     StatementSentence()
   | AssignmentSentence2()
   )?
-  < SP > 
-  cValue = Condition() 
   < SP >
+  {
+    // 标记条件判断开始的位置
+    conditionIndex = QTInfo.size + 1;
+  }
+  cValue = Booler()
+  < SP >
+  {
+    // 1. 生成跳转指令跳过 increment 部分，直接进入循环体
+    // 此时 Booler 成功(True)会走到这里
+    jumpToBody = new QTInfo("J", "_", "_", 0); // 先占位
+    qtList.addQTInfo(jumpToBody);
+
+    // 2. 标记 increment 开始的位置
+    incrementIndex = QTInfo.size + 1;
+  }
   (
     AssignmentSentence2()
   )*
-  ")"
   {
-    cValue.backpatchTrueChain(QTInfo.size + 1);
+    // 3. increment 执行完后，跳回 Condition 进行判断
+    jumpToCondition = new QTInfo("J", "_", "_", conditionIndex);
+    qtList.addQTInfo(jumpToCondition);
+
+    // 4. 标记循环体开始的位置
+    bodyIndex = QTInfo.size + 1;
+
+    // 回填 jumpToBody，使其指向循环体开始
+    jumpToBody.setResult(bodyIndex);
+
+    // 如果 Booler 中有显式的 True 跳转（如 || 运算），也需要指向循环体
+    cValue.backpatchTrueChain(bodyIndex);
   }
+  ")"
   SentenceBlock()
   {
-    QTInfo qtInfo = new QTInfo("j", "_", "_", index);
-    qtList.addQTInfo(qtInfo);
+    // 循环体结束后，跳转到 increment
+    jumpToIncrement = new QTInfo("J", "_", "_", incrementIndex);
+    qtList.addQTInfo(jumpToIncrement);
+
+    // 循环条件失败(False)时，跳出循环（跳到这里，即 size+1）
     cValue.backpatchFalseChain(QTInfo.size + 1);
   }
 }
