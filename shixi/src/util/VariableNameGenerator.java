@@ -1,11 +1,11 @@
 package util;
 
 /**
- * 变量名产生器
- * 
+ * 鍙橀噺鍚嶄骇鐢熷櫒
+ *
  */
 public class VariableNameGenerator {
-	// 序号
+	// 搴忓彿
 	public static int sequenceId = 0;
 	private static final String VAR_PREFIX = "T";
 

@@ -10,9 +10,9 @@ public class VariableTable {
 	}
 
 	public void addWithCheck(Variable variable) {
-		if (variableList.contains(variable)) {  // api ·½·¨
-			System.out.println("±äÁ¿²»ÄÜÖØ¸´¶¨Òå£¡ " + variable.getName()+ " [" +
-		             variable.getLine() + "," + variable.getColumn() + "]");
+		if (variableList.contains(variable)) {  // api æ–¹æ³•
+			System.out.println("å˜é‡ä¸èƒ½é‡å¤å®šä¹‰ï¼ " + variable.getName()+ " [" +
+					variable.getLine() + "," + variable.getColumn() + "]");
 		} else {
 			variableList.add(variable);
 		}
@@ -50,7 +50,7 @@ public class VariableTable {
 	public void removeAll(VariableTable varTable) {
 		removeAll(varTable.variableList);
 	}
-	
+
 	public void clear() {
 		variableList.clear();
 	}
@@ -70,13 +70,13 @@ public class VariableTable {
 	}
 
 	public void printAll() {
-		
+
 		for (int i = 0; i < variableList.size(); i++)
 			System.out.print(variableList.get(i).getName() + "  ");
 		System.out.println("---------");
 	}
 
-	// Èôº¬ÓĞÒÑ¶¨ÒåµÄ±äÁ¿£¬Ôò·µ»Ø¸Ã±äÁ¿ÒıÓÃ£¬·ñÔò·µ»Ønull
+	// è‹¥å«æœ‰å·²å®šä¹‰çš„å˜é‡ï¼Œåˆ™è¿”å›è¯¥å˜é‡å¼•ç”¨ï¼Œå¦åˆ™è¿”å›null
 	public Variable variableExist(Variable info) {
 		Variable infoP = null;
 		for (int i = variableList.size() - 1; i >= 0; i--) {

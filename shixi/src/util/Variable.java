@@ -6,13 +6,13 @@ import cifa.Token;
 
 public class Variable {
 
-	private String type; // ²ÎÊıÀàĞÍ
-	private String name; // ²ÎÊıÃû
+	private String type; // å‚æ•°ç±»å‹
+	private String name; // å‚æ•°å
 	private int line;
 	private int column;
-	private int elementSize;// ÔªËØÕ¼×Ö½ÚµÄ¸öÊı£¬ÔÚÉùÃ÷Óï¾ä½áÊøÊ±¸³Öµ
-	private ArrayInfo arrayInfo = null; // ÄÚÇéÏòÁ¿±í£¬Ö»ÓĞÊı×é±äÁ¿²ÅÓĞÕâ¸öÒıÓÃ
-	private ArrayList<Integer> arrayInfoVar = null; // Êı×é±äÁ¿Ê¹ÓÃÊ±µÄÏÂ±ê
+	private int elementSize;// å…ƒç´ å å­—èŠ‚çš„ä¸ªæ•°ï¼Œåœ¨å£°æ˜è¯­å¥ç»“æŸæ—¶èµ‹å€¼
+	private ArrayInfo arrayInfo = null; // å†…æƒ…å‘é‡è¡¨ï¼Œåªæœ‰æ•°ç»„å˜é‡æ‰æœ‰è¿™ä¸ªå¼•ç”¨
+	private ArrayList<Integer> arrayInfoVar = null; // æ•°ç»„å˜é‡ä½¿ç”¨æ—¶çš„ä¸‹æ ‡
 //	private String address = null;
 
 	public Variable() {
@@ -140,7 +140,7 @@ public class Variable {
 		if (this.arrayInfo.checkArray(intList))
 			flag = true;
 		else
-			System.out.println("Êı×é" + this.name + "ÏÂ±êÒì³£");
+			System.out.println("æ•°ç»„" + this.name + "ä¸‹æ ‡å¼‚å¸¸");
 		return flag;
 	}
 

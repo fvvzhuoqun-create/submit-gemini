@@ -3,7 +3,12 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/src/cifa/MyNewGrammar.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/util/ArrayInfo.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/util/QTInfo.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/util/QTList.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/util/QTTable.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/util/StatementType.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/util/Variable.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/util/VariableNameGenerator.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/util/VariableTable.java" charset="UTF-8" />
   </component>
 </project>

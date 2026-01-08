@@ -1,11 +1,11 @@
 package util;
 
-//定义四元式的信息
+//瀹氫箟鍥涘厓寮忕殑淇℃伅
 public class QTInfo {
 	public static int START = 0;
-	public static int innerIdSeqen = START; // 四元式全局个数
-	public static int size = 0; // 四元式全局个数
-	private int innerId; // 当前四元式ID
+	public static int innerIdSeqen = START; // 鍥涘厓寮忓叏灞�涓暟
+	public static int size = 0; // 鍥涘厓寮忓叏灞�涓暟
+	private int innerId; // 褰撳墠鍥涘厓寮廔D
 	private String operator;
 	private String arg1;
 	private String arg2;

@@ -5,16 +5,16 @@ import java.util.ArrayList;
 
 public class StatementType {
 
-	public VariableTable varTable = null; // ÉùÃ÷Óï¾äÊ¹ÓÃ
-	public Variable      var = null;			// ¸³ÖµÓï¾äÊ¹ÓÃ
-	
+	public VariableTable varTable = null; // å£°æ˜è¯­å¥ä½¿ç”¨
+	public Variable      var = null;			// èµ‹å€¼è¯­å¥ä½¿ç”¨
+
 	// return  break 
-	
+
 	public void setVariableTable(VariableTable variableTable) {
 		this.varTable = variableTable;
 	}
 	public void setVariable(Variable var) {
 		this.var = var;
 	}
-	
+
 }

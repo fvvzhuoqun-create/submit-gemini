@@ -8,7 +8,7 @@ PARSER_BEGIN(MyNewGrammar)
 package cifa;
 import util.*;
 import java.io.*;
-import java.util.ArrayList; // \u5bee\u66de\u53c6 ArrayList \u9422\u3124\u7c2c switch \u9428\ufffd break \u95be\u60e7\u6d16\u6fc9\ufffd
+import java.util.ArrayList;
 
 public class MyNewGrammar/*@bgen(jjtree)*/implements MyNewGrammarTreeConstants/*@egen*/
 {/*@bgen(jjtree)*/
@@ -37,14 +37,12 @@ public class MyNewGrammar/*@bgen(jjtree)*/implements MyNewGrammarTreeConstants/*
       File outFile2 = new File("yuyi.txt");
       FileWriter fos2 = new FileWriter(outFile2);
 
-      // \u5be4\u9e3f\ue185\u9359\ue043\u5a07\u9422\u3124\u7af4\u6d93\ufffd reader\u951b\u5c83\u7e56\u95b2\u5c7c\u7e5a\u9423\u6b0e\u7d98\u9428\u52eb\u5e2b\u95ab\u660f\u7deb\u6d60\u30e9\u69fb\u93c0\u7470\u59e9\u6769\u56e7\u3047
-      FileReader reader = new FileReader("input2.txt");
-      FileReader reader1 = new FileReader("input2.txt");
+      FileReader reader = new FileReader("test_error.txt");
+      FileReader reader1 = new FileReader("test_error.txt");
 
       char [] buffer = new char [10000];
       MyNewGrammar parser = new MyNewGrammar(reader);
 
-      // \u7487\u5d86\u7876\u9352\u55d8\u703d
       Token t = null;
       SimpleCharStream stream = new SimpleCharStream(reader1);
       MyNewGrammarTokenManager tmg = new MyNewGrammarTokenManager(stream);
@@ -64,28 +62,19 @@ public class MyNewGrammar/*@bgen(jjtree)*/implements MyNewGrammarTreeConstants/*
       }
       System.out.println("\n");
 
-      // \u7487\ue15f\u7876\u9352\u55d8\u703d
       System.out.println("\u8bed\u6cd5\u5206\u6790: ");//\u7487\ue15f\u7876\u9352\u55d8\u703d
-      st = new String("\n\u8bed\u6cd5\u5206\u6790:\n");
+      st = new String("\u8bed\u6cd5\u5206\u6790:\n");
+      buffer = st.toCharArray();
+      fos1.write(buffer);
       SimpleNode n = parser.Start();
       n.dump(" ", buffer, fos1);
-      buffer = st.toCharArray();
-      fos1.write(buffer);
 
-      st = new String("Thank you.\n\n");
-      buffer = st.toCharArray();
-      fos1.write(buffer);
-      System.out.println("Thank you.");
-      System.out.println("\n");
-
-      // \u7487\ue15d\u7b9f\u9352\u55d8\u703d
       System.out.println("\u8bed\u4e49\u5206\u6790: \n");//\u7487\ue15d\u7b9f\u9352\u55d8\u703d
       st = new String("\u8bed\u4e49\u5206\u6790: \n");
       buffer = st.toCharArray();
       fos2.write(buffer);
       parser.printQTTable(buffer, fos2);
 
-      // \u934f\u62bd\u68f4\u9a9e\u6735\u7e5a\u701b\u6a3b\u6783\u6d60\ufffd
       fos2.close();
       fos.close();
       fos1.close();
@@ -277,7 +266,7 @@ TOKEN : /*\u9423\u5c80\ue0c1*/
 | < XIAOSHUDIAN : "." >
 }
 
-TOKEN : /* IDENTIFIERS */
+TOKEN :
 {
   < IDENTIFIER :
     < LETTER >
@@ -572,7 +561,6 @@ void ReturnSentence() :
 /*@egen*/
 }
 
-// \u9359\u6a40\u567a\u95b2\u5d85\ue632\u6fb9\u7248\u69d1
 void StatementSentence() :
 {/*@bgen(jjtree) StatementSentence */
   SimpleNode jjtn000 = new SimpleNode(JJTSTATEMENTSENTENCE);
@@ -740,8 +728,6 @@ void AssignmentSentence2() :
 /*@egen*/
 }
 
-// \u6dc7\ue1bd\u657c\u9410\u7678\u7d30\u6d63\u8de8\u6564 Booler() \u93c7\u630e\u5d32 Condition() \u6d60\u30e6\u656e\u93b8\ufffd && \u935c\ufffd ||
-// \u6dc7\ue1bd\u657c\u9410\u7678\u7d30\u6dc7\ue1bc\ue632 ELSE \u9365\u70b2\uff5e\u9428\u52ed\u50a8\u5bee\u66e2\u654a\u7487\ufffd
 void ConditionSentence() :
 {/*@bgen(jjtree) ConditionSentence */
   SimpleNode jjtn000 = new SimpleNode(JJTCONDITIONSENTENCE);
@@ -766,18 +752,15 @@ void ConditionSentence() :
     LOOKAHEAD(1)
     < ELSE >
     {
-      // \u9422\u71b8\u579a\u74ba\u5ba0\u7e43 ELSE \u9367\u6943\u6b91\u74ba\u5ba0\u6d46\u93b8\u56e6\u62a4
       QTInfo qtInfo = new QTInfo("j", "_", "_", "F");
-      index = QTInfo.size; // \u7481\u677f\u7d8d\u6769\u6b10\u6f6f\u74ba\u5ba0\u6d46\u93b8\u56e6\u62a4\u9428\u52ed\u50a8\u5bee\u66ea\u7d19list \u6d93\u5b2b\u7223\u951b\ufffd
+      index = QTInfo.size;
       qtList.addQTInfo(qtInfo);
 
-      // \u6769\u6b13\u5677\u9428\ufffd FalseChain \u93c4\ufffd IF \u93c9\u2032\u6b22\u6fb6\u8fab\u89e6\u93c3\u60f0\u70e6\u6769\u56e8\u6f75\u9428\u52ea\u7d85\u7f03\ue1c6\u7d1d\u6434\u65c7\ue1da\u74ba\u51b2\u57cc ELSE \u9367\u6940\u7d11\u6fee\u5b36\u7d19\u9357\u51b2\u7d8b\u9353\u5d84\u7d85\u7f03\ufffd+1\u951b\ufffd
       cValue.backpatchFalseChain(QTInfo.size + 1);
     }
     SentenceBlock()
     {
-      // \u9365\u70b2\uff5e\u74ba\u5ba0\u7e43 ELSE \u9367\u6943\u6b91\u95ad\uff44\u91dc\u93b8\u56e6\u62a4\u951b\u5c7c\u5a07\u934f\u60f0\u70e6\u9352\u7248\u66a3\u6d93\ufffd IF-ELSE \u6d94\u5b2a\u6097
-      qtInfo = qtList.get(index); // \u6dc7\ue1bd\ue11c\u951b\u6c2c\u7c32\u7487\u30e6\u69f8 index\u951b\u5c7c\u7b09\u93c4\ufffd index-1
+      qtInfo = qtList.get(index);
       qtInfo.setResult(QTInfo.size + 1);
     }
   )?/*@bgen(jjtree)*/
@@ -1149,6 +1132,7 @@ String UnaryExpression() :
   String str = null;
   Token to = null;
   Variable va = new Variable();
+  Token t = null;
 }
 {/*@bgen(jjtree) UnaryExpression */
   try {
@@ -1165,6 +1149,7 @@ String UnaryExpression() :
       }
     }
   | str = Integer()
+  | t = < FLOATING_POINT_LITERAL > { str = t.image; }
   )/*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn000, true);
@@ -1353,7 +1338,6 @@ ConditionValue Booler() :
 /*@egen*/
 }
 
-// \u6dc7\ue1bd\u657c\u9410\u7678\u7d30\u5a23\u8bf2\u59de break \u93c0\ue21b\u5bd4
 void SwitchSentence() :
 {/*@bgen(jjtree) SwitchSentence */
   SimpleNode jjtn000 = new SimpleNode(JJTSWITCHSENTENCE);
@@ -1367,7 +1351,6 @@ void SwitchSentence() :
   Token tok;
   Token tokx;
 
-  // \u9422\u3124\u7c2c\u701b\u6a3a\u504d break \u93b8\u56e6\u62a4\u9428\u52ed\u50a8\u5bee\u66de\u57aa\u741b\ufffd
   ArrayList<Integer> breakChain = new ArrayList<Integer>();
   QTInfo breakJump;
 }
@@ -1407,9 +1390,8 @@ void SwitchSentence() :
     )*
     < BREAK >
     {
-       // \u9422\u71b8\u579a\u93c3\u72b3\u6f6f\u6d60\u60f0\u70e6\u675e\ue10a\u7d1d\u74ba\u51b2\u56ad switch
        breakJump = new QTInfo("j", "_", "_", "F");
-       breakChain.add(QTInfo.size); // \u7481\u677f\u7d8d\u8930\u64b3\u58a0\u93b8\u56e6\u62a4\u6d63\u5d87\u7586
+       breakChain.add(QTInfo.size);
        qtList.addQTInfo(breakJump);
     }
     < SP >
@@ -1427,7 +1409,6 @@ void SwitchSentence() :
   }
 /*@egen*/
   {
-     // \u9365\u70b2\uff5e\u93b5\ufffd\u93c8\u590c\u6b91 break \u74ba\u5ba0\u6d46\u9352\ufffd switch \u7f01\u64b4\u6f6b\u6d63\u5d87\u7586
      for(Integer i : breakChain) {
         qtList.get(i).setResult(QTInfo.size + 1);
      }
@@ -1511,8 +1492,6 @@ void DoWhile() :
 /*@egen*/
 }
 
-// \u6dc7\ue1bd\u657c\u9410\u7678\u7d30\u6dc7\ue1bc\ue632 For \u5bf0\ue046\u5e46\u93b5\u0446\ue511\u6924\u54c4\u7c2d
-// \u6924\u54c4\u7c2d\u748b\u51a9\u66a3\u6d93\u7334\u7d30Init -> [Label Condition] -> Booler -> Jump False End -> Jump BodyStart -> [Label Increment] -> Increment -> Jump Condition -> [Label BodyStart] -> Body -> Jump Increment -> [Label End]
 void forSentence() :
 {/*@bgen(jjtree) forSentence */
   SimpleNode jjtn000 = new SimpleNode(JJTFORSENTENCE);
@@ -1537,35 +1516,23 @@ void forSentence() :
   )?
   < SP >
   {
-    // \u93cd\u56ea\ue187\u93c9\u2032\u6b22\u9352\u3086\u67c7\u5bee\ufffd\u6fee\u5b2c\u6b91\u6d63\u5d87\u7586
     conditionIndex = QTInfo.size + 1;
   }
   cValue = Booler()
   < SP >
   {
-    // 1. \u9422\u71b8\u579a\u74ba\u5ba0\u6d46\u93b8\u56e6\u62a4\u74ba\u5ba0\u7e43 increment \u95ae\u3125\u578e\u951b\u5c80\u6d3f\u93ba\u30e8\u7e58\u934f\u30e5\u60ca\u941c\ue219\u7d8b
-    // \u59dd\u3086\u6902 Booler \u93b4\u612c\u59db(True)\u6d7c\u6c33\u86cb\u9352\u62cc\u7e56\u95b2\ufffd
-    jumpToBody = new QTInfo("J", "_", "_", 0); // \u934f\u581d\u5d30\u6d63\ufffd
+    jumpToBody = new QTInfo("J", "_", "_", 0);
     qtList.addQTInfo(jumpToBody);
-
-    // 2. \u93cd\u56ea\ue187 increment \u5bee\ufffd\u6fee\u5b2c\u6b91\u6d63\u5d87\u7586
     incrementIndex = QTInfo.size + 1;
   }
   (
     AssignmentSentence2()
   )*
   {
-    // 3. increment \u93b5\u0446\ue511\u7039\u5c7d\u6097\u951b\u5c83\u70e6\u9365\ufffd Condition \u6769\u6d9c\ue511\u9352\u3086\u67c7
     jumpToCondition = new QTInfo("J", "_", "_", conditionIndex);
     qtList.addQTInfo(jumpToCondition);
-
-    // 4. \u93cd\u56ea\ue187\u5bf0\ue046\u5e46\u6d63\u64b3\u7d11\u6fee\u5b2c\u6b91\u6d63\u5d87\u7586
     bodyIndex = QTInfo.size + 1;
-
-    // \u9365\u70b2\uff5e jumpToBody\u951b\u5c7c\u5a07\u934f\u8235\u5bda\u935a\u621d\u60ca\u941c\ue219\u7d8b\u5bee\ufffd\u6fee\ufffd
     jumpToBody.setResult(bodyIndex);
-
-    // \u6fe1\u509b\u7049 Booler \u6d93\ue15f\u6e41\u93c4\u60e7\u7d21\u9428\ufffd True \u74ba\u5ba0\u6d46\u951b\u581d\ue6e7 || \u6769\u612e\u757b\u951b\u591b\u7d1d\u6d94\u71bc\u6e36\u7455\u4f79\u5bda\u935a\u621d\u60ca\u941c\ue219\u7d8b
     cValue.backpatchTrueChain(bodyIndex);
   }
   ")"
@@ -1576,11 +1543,8 @@ void forSentence() :
   }
 /*@egen*/
   {
-    // \u5bf0\ue046\u5e46\u6d63\u64b6\u7ca8\u93c9\u71b7\u6097\u951b\u5c83\u70e6\u675e\ue100\u57cc increment
     jumpToIncrement = new QTInfo("J", "_", "_", incrementIndex);
     qtList.addQTInfo(jumpToIncrement);
-
-    // \u5bf0\ue046\u5e46\u93c9\u2032\u6b22\u6fb6\u8fab\u89e6(False)\u93c3\u8bb9\u7d1d\u74ba\u51b2\u56ad\u5bf0\ue046\u5e46\u951b\u5823\u70e6\u9352\u62cc\u7e56\u95b2\u5c8b\u7d1d\u9357\ufffd size+1\u951b\ufffd
     cValue.backpatchFalseChain(QTInfo.size + 1);
   }/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {

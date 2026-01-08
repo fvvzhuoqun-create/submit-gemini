@@ -3,7 +3,7 @@
 package cifa;
 import util.*;
 import java.io.*;
-import java.util.ArrayList; // 引入 ArrayList 用于 switch �? break 链回�?
+import java.util.ArrayList;
 
 public class MyNewGrammar/*@bgen(jjtree)*/implements MyNewGrammarTreeConstants, MyNewGrammarConstants {/*@bgen(jjtree)*/
   protected JJTMyNewGrammarState jjtree = new JJTMyNewGrammarState();public QTList qtList = new QTList();
@@ -28,14 +28,12 @@ public class MyNewGrammar/*@bgen(jjtree)*/implements MyNewGrammarTreeConstants, 
       File outFile2 = new File("yuyi.txt");
       FileWriter fos2 = new FileWriter(outFile2);
 
-      // 建议只使用一�? reader，这里保留你的原逻辑以防改动过大
-      FileReader reader = new FileReader("input2.txt");
-      FileReader reader1 = new FileReader("input2.txt");
+      FileReader reader = new FileReader("test_error.txt");
+      FileReader reader1 = new FileReader("test_error.txt");
 
       char [] buffer = new char [10000];
       MyNewGrammar parser = new MyNewGrammar(reader);
 
-      // 词法分析
       Token t = null;
       SimpleCharStream stream = new SimpleCharStream(reader1);
       MyNewGrammarTokenManager tmg = new MyNewGrammarTokenManager(stream);
@@ -55,28 +53,19 @@ public class MyNewGrammar/*@bgen(jjtree)*/implements MyNewGrammarTreeConstants, 
       }
       System.out.println("\n");
 
-      // 语法分析
       System.out.println("\u8bed\u6cd5\u5206\u6790: ");//语法分析
-      st = new String("\n\u8bed\u6cd5\u5206\u6790:\n");
+      st = new String("\u8bed\u6cd5\u5206\u6790:\n");
+      buffer = st.toCharArray();
+      fos1.write(buffer);
       SimpleNode n = parser.Start();
       n.dump(" ", buffer, fos1);
-      buffer = st.toCharArray();
-      fos1.write(buffer);
 
-      st = new String("Thank you.\n\n");
-      buffer = st.toCharArray();
-      fos1.write(buffer);
-      System.out.println("Thank you.");
-      System.out.println("\n");
-
-      // 语义分析
       System.out.println("\u8bed\u4e49\u5206\u6790: \n");//语义分析
       st = new String("\u8bed\u4e49\u5206\u6790: \n");
       buffer = st.toCharArray();
       fos2.write(buffer);
       parser.printQTTable(buffer, fos2);
 
-      // 关闭并保存文�?
       fos2.close();
       fos.close();
       fos1.close();
@@ -487,7 +476,6 @@ if (jjtc000) {
     }
 }
 
-// 变量重复声明
   final public void StatementSentence() throws ParseException {/*@bgen(jjtree) StatementSentence */
   SimpleNode jjtn000 = new SimpleNode(JJTSTATEMENTSENTENCE);
   boolean jjtc000 = true;
@@ -622,8 +610,6 @@ if (jjtc000) {
     }
 }
 
-// 修改点：使用 Booler() 替换 Condition() 以支�? && �? ||
-// 修改点：修复 ELSE 回填的索引错�?
   final public void ConditionSentence() throws ParseException {/*@bgen(jjtree) ConditionSentence */
   SimpleNode jjtn000 = new SimpleNode(JJTCONDITIONSENTENCE);
   boolean jjtc000 = true;
@@ -640,16 +626,13 @@ cValue.backpatchFalseChain(QTInfo.size + 1);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case ELSE:{
         jj_consume_token(ELSE);
-// 生成跳过 ELSE 块的跳转指令
-      QTInfo qtInfo = new QTInfo("j", "_", "_", "F");
-      index = QTInfo.size; // 记录这条跳转指令的索引（list 下标�?
+QTInfo qtInfo = new QTInfo("j", "_", "_", "F");
+      index = QTInfo.size;
       qtList.addQTInfo(qtInfo);
 
-      // 这里�? FalseChain �? IF 条件失败时跳过来的位置，应该跳到 ELSE 块开始（即当前位�?+1�?
       cValue.backpatchFalseChain(QTInfo.size + 1);
         SentenceBlock();
-// 回填跳过 ELSE 块的那个指令，使其跳到整�? IF-ELSE 之后
-      qtInfo = qtList.get(index); // 修正：应该是 index，不�? index-1
+qtInfo = qtList.get(index);
       qtInfo.setResult(QTInfo.size + 1);
         break;
         }
@@ -727,6 +710,7 @@ if (jjtc000) {
     try {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case INTEGER_LITERAL:
+      case FLOATING_POINT_LITERAL:
       case LB:
       case IDENTIFIER:{
         e1 = Expression();
@@ -1021,6 +1005,7 @@ if (jjtc000) {
   jjtree.openNodeScope(jjtn000);String str = null;
   Token to = null;
   Variable va = new Variable();
+  Token t = null;
     try {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case LB:{
@@ -1041,6 +1026,11 @@ str = to.image;
         }
       case INTEGER_LITERAL:{
         str = Integer();
+        break;
+        }
+      case FLOATING_POINT_LITERAL:{
+        t = jj_consume_token(FLOATING_POINT_LITERAL);
+str = t.image;
         break;
         }
       default:
@@ -1213,7 +1203,6 @@ if (jjtc000) {
     throw new Error("Missing return statement in function");
 }
 
-// 修改点：添加 break 支持
   final public void SwitchSentence() throws ParseException {/*@bgen(jjtree) SwitchSentence */
   SimpleNode jjtn000 = new SimpleNode(JJTSWITCHSENTENCE);
   boolean jjtc000 = true;
@@ -1224,7 +1213,6 @@ if (jjtc000) {
   Token tok;
   Token tokx;
 
-  // 用于存储 break 指令的索引列�?
   ArrayList<Integer> breakChain = new ArrayList<Integer>();
   QTInfo breakJump;
     try {
@@ -1293,9 +1281,8 @@ QTInfo qt1;
           SentenceBlock();
         }
         jj_consume_token(BREAK);
-// 生成无条件跳转，跳出 switch
-       breakJump = new QTInfo("j", "_", "_", "F");
-       breakChain.add(QTInfo.size); // 记录当前指令位置
+breakJump = new QTInfo("j", "_", "_", "F");
+       breakChain.add(QTInfo.size);
        qtList.addQTInfo(breakJump);
         jj_consume_token(SP);
       }
@@ -1338,8 +1325,7 @@ QTInfo qt1;
       jj_consume_token(YOUHUAKUO);
 jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
-// 回填�?有的 break 跳转�? switch 结束位置
-     for(Integer i : breakChain) {
+for(Integer i : breakChain) {
         qtList.get(i).setResult(QTInfo.size + 1);
      }
     } catch (Throwable jjte000) {
@@ -1404,8 +1390,6 @@ if (jjtc000) {
     }
 }
 
-// 修改点：修复 For 循环执行顺序
-// 顺序调整为：Init -> [Label Condition] -> Booler -> Jump False End -> Jump BodyStart -> [Label Increment] -> Increment -> Jump Condition -> [Label BodyStart] -> Body -> Jump Increment -> [Label End]
   final public void forSentence() throws ParseException {/*@bgen(jjtree) forSentence */
   SimpleNode jjtn000 = new SimpleNode(JJTFORSENTENCE);
   boolean jjtc000 = true;
@@ -1457,16 +1441,11 @@ if (jjtc000) {
         ;
       }
       jj_consume_token(SP);
-// 标记条件判断�?始的位置
-    conditionIndex = QTInfo.size + 1;
+conditionIndex = QTInfo.size + 1;
       cValue = Booler();
       jj_consume_token(SP);
-// 1. 生成跳转指令跳过 increment 部分，直接进入循环体
-    // 此时 Booler 成功(True)会走到这�?
-    jumpToBody = new QTInfo("J", "_", "_", 0); // 先占�?
+jumpToBody = new QTInfo("J", "_", "_", 0);
     qtList.addQTInfo(jumpToBody);
-
-    // 2. 标记 increment �?始的位置
     incrementIndex = QTInfo.size + 1;
       label_8:
       while (true) {
@@ -1481,27 +1460,17 @@ if (jjtc000) {
         }
         AssignmentSentence2();
       }
-// 3. increment 执行完后，跳�? Condition 进行判断
-    jumpToCondition = new QTInfo("J", "_", "_", conditionIndex);
+jumpToCondition = new QTInfo("J", "_", "_", conditionIndex);
     qtList.addQTInfo(jumpToCondition);
-
-    // 4. 标记循环体开始的位置
     bodyIndex = QTInfo.size + 1;
-
-    // 回填 jumpToBody，使其指向循环体�?�?
     jumpToBody.setResult(bodyIndex);
-
-    // 如果 Booler 中有显式�? True 跳转（如 || 运算），也需要指向循环体
     cValue.backpatchTrueChain(bodyIndex);
       jj_consume_token(RB);
       SentenceBlock();
 jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
-// 循环体结束后，跳转到 increment
-    jumpToIncrement = new QTInfo("J", "_", "_", incrementIndex);
+jumpToIncrement = new QTInfo("J", "_", "_", incrementIndex);
     qtList.addQTInfo(jumpToIncrement);
-
-    // 循环条件失败(False)时，跳出循环（跳到这里，�? size+1�?
     cValue.backpatchFalseChain(QTInfo.size + 1);
     } catch (Throwable jjte000) {
 if (jjtc000) {
@@ -1543,7 +1512,7 @@ if (jjtc000) {
 	   jj_la1_init_2();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0xdf6d8000,0xdc058000,0xdf6d8000,0xdf6d8000,0xdf6d8000,0xdc058000,0x0,0x100000,0x80,0x0,0x0,0x0,0x0,0x0,0x0,0x80,0x0,0x0,0x0,0x20000000,0xdf6d8000,0xdf6d8000,0x800000,0xdc058000,0xdc058000,0x0,};
+	   jj_la1_0 = new int[] {0xdf6d8000,0xdc058000,0xdf6d8000,0xdf6d8000,0xdf6d8000,0xdc058000,0x0,0x100000,0x880,0x0,0x0,0x0,0x0,0x0,0x0,0x880,0x0,0x0,0x0,0x20000000,0xdf6d8000,0xdf6d8000,0x800000,0xdc058000,0xdc058000,0x0,};
 	}
 	private static void jj_la1_init_1() {
 	   jj_la1_1 = new int[] {0x400000,0x0,0x400000,0x400000,0x400000,0x400000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x400000,0x400000,0x0,0x0,0x0,0x0,};

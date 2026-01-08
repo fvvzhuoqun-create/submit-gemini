@@ -1,0 +1,10 @@
+int main() {
+    int a;
+    double b;
+    bool flag;
+    int x, y, z;
+    a = 100;
+    b = 3.14;
+    x = 1;
+    return a;
+}

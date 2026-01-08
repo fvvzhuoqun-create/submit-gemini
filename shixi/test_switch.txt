@@ -1,0 +1,21 @@
+int main() {
+    int type;
+    int value;
+    type = 2;
+    value = 0;
+    switch (type) {
+        case 1:
+            value = 100;
+            break;
+        case 2:
+            value = 200;
+            break;
+        case 3:
+            value = 300;
+            break;
+        default:
+            value = -1;
+            break;
+    }
+    return value;
+}

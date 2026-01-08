@@ -1,0 +1,18 @@
+int main() {
+    int score;
+    int grade;
+    score = 85;
+    if (score > 60) {
+        grade = 1;
+    }
+    if (score > 90) {
+        grade = 3;
+    } else {
+        if (score > 75) {
+            grade = 2;
+        } else {
+            grade = 1;
+        }
+    }
+    return grade;
+}
