@@ -25,6 +25,7 @@ def create_data_loaders(data_processor, batch_size=16):
 
     # ... (DataLoader 配置保持不变) ...
     # 为简洁省略，请保持原有的DataLoader代码
+    num_workers = 0
     train_loader = DataLoader(train_dataset, batch_size=batch_size, collate_fn=collate_fn, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, collate_fn=collate_fn, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, collate_fn=collate_fn, shuffle=False)
@@ -66,7 +67,7 @@ def main():
                 cell_dim=cell_dim,
                 physchem_dim=physchem_dim
             )
-            batch_size = 16
+            batch_size = 8
         elif model_type == "qwen_enhanced":
             model = QwenEnhancedDrugSynergyModel(
                 gcn_config,

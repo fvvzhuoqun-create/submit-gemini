@@ -1,12 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv, global_mean_pool
+from torch_geometric.nn import GCNConv, GATv2Conv, global_mean_pool
 from transformers import AutoModel, AutoTokenizer
 
-
-# 保持其他类 (FocalLoss, DrugGCN, CrossModalAttention) 不变...
-# ... (此处省略 FocalLoss, DrugGCN, CrossModalAttention 定义，保持原样) ...
 
 class FocalLoss(nn.Module):
     def __init__(self, alpha=1, gamma=2, reduction='mean'):
@@ -27,22 +24,42 @@ class FocalLoss(nn.Module):
             return focal_loss
 
 
-class DrugGCN(nn.Module):
-    def __init__(self, in_feats, hidden_size, out_feats, dropout=0.4):
-        super(DrugGCN, self).__init__()
-        self.conv1 = GCNConv(in_feats, hidden_size)
-        self.conv2 = GCNConv(hidden_size, hidden_size)
-        self.conv3 = GCNConv(hidden_size, out_feats)
-        self.dropout = nn.Dropout(dropout)
-        self.batch_norm1 = nn.BatchNorm1d(hidden_size)
-        self.batch_norm2 = nn.BatchNorm1d(hidden_size)
+class DrugGAT(nn.Module):
+    """
+    使用 GATv2 替代 GCN 的图注意力网络提取器
+    """
+
+    def __init__(self, in_feats, hidden_size, out_feats, dropout=0.2, heads=4):
+        super(DrugGAT, self).__init__()
+        self.dropout = dropout
+
+        # 第一层 GAT: 输入 -> 隐藏层 * heads
+        self.conv1 = GATv2Conv(in_feats, hidden_size, heads=heads, dropout=dropout, concat=True)
+        self.batch_norm1 = nn.BatchNorm1d(hidden_size * heads)
+
+        # 第二层 GAT: 隐藏层 * heads -> 隐藏层 * heads
+        self.conv2 = GATv2Conv(hidden_size * heads, hidden_size, heads=heads, dropout=dropout, concat=True)
+        self.batch_norm2 = nn.BatchNorm1d(hidden_size * heads)
+
+        # 第三层 GAT: 隐藏层 * heads -> 输出特征 (不拼接，通过平均或投影回到 out_feats)
+        self.conv3 = GATv2Conv(hidden_size * heads, out_feats, heads=1, concat=False, dropout=dropout)
 
     def forward(self, x, edge_index):
-        x = F.relu(self.batch_norm1(self.conv1(x, edge_index)))
-        x = self.dropout(x)
-        x = F.relu(self.batch_norm2(self.conv2(x, edge_index)))
-        x = self.dropout(x)
+        # Layer 1
+        x = self.conv1(x, edge_index)
+        x = self.batch_norm1(x)
+        x = F.elu(x)  # GAT 推荐使用 ELU
+        x = F.dropout(x, p=self.dropout, training=self.training)
+
+        # Layer 2
+        x = self.conv2(x, edge_index)
+        x = self.batch_norm2(x)
+        x = F.elu(x)
+        x = F.dropout(x, p=self.dropout, training=self.training)
+
+        # Layer 3
         x = self.conv3(x, edge_index)
+        # 最后一层直接输出 Embedding
         return x
 
 
@@ -76,9 +93,10 @@ class QwenEnhancedDrugSynergyModel(nn.Module):
                  qwen_model_name="Qwen/Qwen2-1.5B"):
         super().__init__()
 
-        # GCN模型
-        self.gcn_drug1 = DrugGCN(**gcn_config)
-        self.gcn_drug2 = DrugGCN(**gcn_config)
+        # --- 修改：使用 DrugGAT ---
+        # gcn_config 中的参数会被解包传入，额外指定 heads=4
+        self.gcn_drug1 = DrugGAT(**gcn_config, heads=4)
+        self.gcn_drug2 = DrugGAT(**gcn_config, heads=4)
 
         # 语言模型 (保持原逻辑)
         print(f"正在加载Qwen2模型: {qwen_model_name}")
@@ -87,7 +105,6 @@ class QwenEnhancedDrugSynergyModel(nn.Module):
             self.tokenizer = AutoTokenizer.from_pretrained(qwen_model_name, trust_remote_code=True)
         except Exception as e:
             print(f"模型加载错误，请确保环境配置正确: {e}")
-            # 降级处理... (省略)
             raise e
 
         if self.tokenizer.pad_token is None:
@@ -108,9 +125,9 @@ class QwenEnhancedDrugSynergyModel(nn.Module):
             nn.Linear(512, 256)
         )
 
-        # 计算总特征维度 (更新部分)
+        # 计算总特征维度
         gcn_out = gcn_config['out_feats']
-        # 结构特征 = GCN(2个) + 靶点(2个) + 理化(2个) + 细胞系(1个)
+        # 结构特征 = GAT(2个) + 靶点(2个) + 理化(2个) + 细胞系(1个)
         total_structural_features = (gcn_out * 2) + (target_dim * 2) + (physchem_dim * 2) + cell_dim
         total_multimodal_features = total_structural_features + 256  # +文本特征
 
@@ -149,7 +166,7 @@ class QwenEnhancedDrugSynergyModel(nn.Module):
     def forward(self, batch_data):
         device = next(self.parameters()).device
 
-        # 1. GCN 特征
+        # 1. GAT 特征 (注意这里调用的是 GAT 模块)
         g1, g2 = batch_data['graph1'], batch_data['graph2']
         d1 = self.gcn_drug1(g1.x.to(device), g1.edge_index.to(device))
         d1 = global_mean_pool(d1, g1.batch.to(device))
@@ -159,8 +176,8 @@ class QwenEnhancedDrugSynergyModel(nn.Module):
         # 2. 其他特征 (Target, PhysChem, Cell)
         target1 = batch_data['target1'].to(device)
         target2 = batch_data['target2'].to(device)
-        physchem1 = batch_data['physchem1'].to(device)  # 新增
-        physchem2 = batch_data['physchem2'].to(device)  # 新增
+        physchem1 = batch_data['physchem1'].to(device)
+        physchem2 = batch_data['physchem2'].to(device)
         cell_expr = batch_data['cell_expr'].to(device)
 
         # 3. 文本特征
@@ -189,8 +206,11 @@ class OptimizedDrugSynergyModel(nn.Module):
 
     def __init__(self, gcn_config, num_classes=2, target_dim=560, cell_dim=1024, physchem_dim=7):
         super().__init__()
-        self.gcn_drug1 = DrugGCN(**gcn_config)
-        self.gcn_drug2 = DrugGCN(**gcn_config)
+
+        # --- 修改：使用 DrugGAT ---
+        # 同样传入 heads=4
+        self.gcn_drug1 = DrugGAT(**gcn_config, heads=4)
+        self.gcn_drug2 = DrugGAT(**gcn_config, heads=4)
 
         # 维度计算
         gcn_out = gcn_config['out_feats']
@@ -224,7 +244,7 @@ class OptimizedDrugSynergyModel(nn.Module):
     def forward(self, batch_data):
         device = next(self.parameters()).device
 
-        # GCN
+        # GAT 提取特征
         g1, g2 = batch_data['graph1'], batch_data['graph2']
         d1 = global_mean_pool(self.gcn_drug1(g1.x.to(device), g1.edge_index.to(device)), g1.batch.to(device))
         d2 = global_mean_pool(self.gcn_drug2(g2.x.to(device), g2.edge_index.to(device)), g2.batch.to(device))
