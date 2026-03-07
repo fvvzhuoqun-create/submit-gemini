@@ -52,10 +52,7 @@ class ImprovedDrugSynergyTrainer:
             final_div_factor=100
         )
 
-        # 早停机制
-        self.early_stopping_patience = 15
-        self.early_stopping_counter = 0
-        self.early_stopping_min_delta = 0.001
+        # 已取消早停机制，仅保留最佳模型记录变量
         self.best_val_auc = 0.0
         self.best_val_acc = 0.0
         self.best_val_f1 = 0.0
@@ -116,28 +113,22 @@ class ImprovedDrugSynergyTrainer:
             }
             self.metrics_history.append(epoch_metrics)
 
-            # 检查早停
+            # 检查是否保存最佳模型（取消了早停的打断逻辑）
             current_val_auc = val_metrics["AUROC"]
-            should_save = current_val_auc > self.best_val_auc + self.early_stopping_min_delta
+            should_save = current_val_auc > self.best_val_auc
 
             if should_save:
+                old_val_auc = self.best_val_auc
                 self.best_val_auc = current_val_auc
                 self.best_val_acc = val_metrics["ACC"]
                 self.best_val_f1 = val_metrics["F1"]
                 self.best_epoch = epoch + 1
-                self.early_stopping_counter = 0
                 self.save_best_model(epoch + 1)
-                print(f"✓ 发现更好的模型 (AUC: {current_val_auc:.4f}, 提升: {current_val_auc - self.best_val_auc:.4f})")
+                print(f"✓ 发现更好的模型 (AUC: {current_val_auc:.4f}, 提升: {current_val_auc - old_val_auc:.4f})")
             else:
-                self.early_stopping_counter += 1
-                print(
-                    f"→ 未提升 AUC: {current_val_auc:.4f} (最佳: {self.best_val_auc:.4f}), 早停计数器: {self.early_stopping_counter}/{self.early_stopping_patience}")
+                print(f"→ 未提升 AUC: {current_val_auc:.4f} (最佳: {self.best_val_auc:.4f})")
 
             self.print_epoch_progress(epoch + 1, train_loss, train_metrics, val_metrics, epoch_time)
-
-            if self.early_stopping_counter >= self.early_stopping_patience:
-                print(f"\n⚠️ 早停触发! 连续 {self.early_stopping_patience} 个epoch验证AUC未提升")
-                break
 
             if (epoch + 1) % 10 == 0:
                 from utils import save_metrics_to_excel
