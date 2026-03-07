@@ -5,16 +5,20 @@ from torch_geometric.nn import GATv2Conv, global_mean_pool
 from transformers import AutoModel, AutoTokenizer
 
 class FocalLoss(nn.Module):
-    def __init__(self, alpha=1, gamma=2, reduction='mean'):
+    # 修改：将 alpha 替换为 weight 接收类别权重
+    def __init__(self, weight=None, gamma=2.0, reduction='mean'):
         super().__init__()
-        self.alpha = alpha
+        self.weight = weight
         self.gamma = gamma
         self.reduction = reduction
 
     def forward(self, inputs, targets):
-        ce_loss = F.cross_entropy(inputs, targets, reduction='none')
+        # 修改：将 weight 参数传递给 F.cross_entropy，实现类别加权
+        ce_loss = F.cross_entropy(inputs, targets, weight=self.weight, reduction='none')
         pt = torch.exp(-ce_loss)
-        focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
+        # 修改：移除外层乘以标量 alpha 的逻辑，权重已在上面生效
+        focal_loss = ((1 - pt) ** self.gamma) * ce_loss
+        
         if self.reduction == 'mean':
             return torch.mean(focal_loss)
         elif self.reduction == 'sum':

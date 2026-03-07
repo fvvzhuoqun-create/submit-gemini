@@ -7,8 +7,8 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 import numpy as np
 import time
 from tqdm import tqdm
-from model import FocalLoss
-
+# 确保你的 FocalLoss 从正确的文件导入，如果放在 main.py 中，这里可能是 from main import FocalLoss
+from model import FocalLoss 
 
 class ImprovedDrugSynergyTrainer:
     def __init__(self, model, train_loader, val_loader, test_loader, device):
@@ -25,11 +25,13 @@ class ImprovedDrugSynergyTrainer:
         print("为了 GATv2 的稳定性，已强制关闭混合精度训练 (使用 FP32)")
 
         # 计算类别权重
-        self.class_weights = self.calculate_class_weights()
+        # 修改：增加 .to(device) 以确保权重所在的设备与模型输出和标签一致
+        self.class_weights = self.calculate_class_weights().to(self.device)
         print(f"使用的类别权重: {self.class_weights}")
 
         # 使用Focal Loss
-        self.criterion = FocalLoss(alpha=0.75, gamma=2.0, reduction='mean')
+        # 修改：将算出的 class_weights 作为 weight 参数传入
+        self.criterion = FocalLoss(weight=self.class_weights, gamma=2.0, reduction='mean')
 
         # 优化器
         self.optimizer = torch.optim.AdamW(
