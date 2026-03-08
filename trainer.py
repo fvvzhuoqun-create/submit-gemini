@@ -20,21 +20,12 @@ class ImprovedDrugSynergyTrainer:
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_loader = test_loader
-
-        # 显式计算权重并移动到 device
-        weights = self.calculate_class_weights().to(device)
-        self.criterion = FocalLoss(weight=weights)
+        self.criterion = FocalLoss()
 
         self.optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5, weight_decay=0.05)
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=10)
 
-    def calculate_class_weights(self):
-        labels = []
-        for i, batch in enumerate(self.train_loader):
-            labels.extend(batch['labels'].numpy())
-            if i > 20: break
-        counts = np.bincount(labels)
-        return torch.tensor(len(labels) / (len(counts) * counts), dtype=torch.float32)
+   
 
     def train_epoch(self, epoch):
         self.model.train()

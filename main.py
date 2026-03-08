@@ -32,7 +32,7 @@ def main():
 
     # 3. 加载完整数据集并进行划分 (按 8:1:1 比例)
     print("正在加载数据集...")
-    full_dataset = DrugSynergyDataset('two_class_synergy_data.csv', processor)
+    full_dataset = DrugSynergyDataset('balanced_synergy_data.csv', processor)
 
     total_size = len(full_dataset)
     train_size = int(0.8 * total_size)
