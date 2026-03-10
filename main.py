@@ -50,12 +50,12 @@ def main():
 
     # 4. 创建对应的 DataLoader
     # 【优化项 1】：针对 A40 48GB 显存，大幅提升 batch_size 榨干显卡算力
-    batch_size = 16 
+    batch_size = 8 
 
     # 【优化项 2】：开启多线程 (num_workers) 和锁页内存 (pin_memory)，加速 CPU 向 GPU 喂数据的速度
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=4, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn, num_workers=4, pin_memory=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn, num_workers=4, pin_memory=True)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=2, pin_memory=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn, num_workers=2, pin_memory=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn, num_workers=2, pin_memory=True)
 
     print("正在初始化大语言模型及GNN网络...")
     model = QwenEnhancedDrugSynergyModel(
