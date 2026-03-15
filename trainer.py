@@ -9,7 +9,7 @@ from sklearn.metrics import (
 )
 
 from model import FocalLoss
-# 引入你在 utils.py 中写好的保存 Excel 的函数
+# 引入你在 utils.py 中写好的保存 Excel 的函?
 from utils import save_metrics_to_excel
 
 
@@ -20,11 +20,30 @@ class ImprovedDrugSynergyTrainer:
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_loader = test_loader
-        self.criterion = FocalLoss()
+        self.criterion = torch.nn.CrossEntropyLoss()
 
-        self.optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5, weight_decay=0.05)
-        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=10)
+        qwen_params = []
+        new_params = []
+        
+        # vģЅ
+        for name, param in model.named_parameters():
+            if not param.requires_grad:
+                continue
+            
+            # --- ע⣺@ֱ for ѭhĿsM ---
+            if 'qwen' in name:
+                qwen_params.append(param)
+            else:
+                new_params.append(param)
+            # ------------------------------------------
 
+        # O֌ӌW
+        self.optimizer = torch.optim.AdamW([
+            {'params': qwen_params, 'lr': 1e-5},     # Qwen ΢{
+            {'params': new_params, 'lr': 5e-4}       # GCN/ͶӰ/ ٌW
+        ], weight_decay=0.01)
+
+        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=100)
    
 
     def train_epoch(self, epoch):
@@ -54,7 +73,6 @@ class ImprovedDrugSynergyTrainer:
         return total_loss / len(self.train_loader)
 
     def evaluate(self, dataloader, epoch, phase="Validation"):
-        """新增的评估函数，用于计算所有指标"""
         self.model.eval()
         total_loss = 0
 
@@ -76,29 +94,29 @@ class ImprovedDrugSynergyTrainer:
                 loss = self.criterion(logits, batch['labels'])
                 total_loss += loss.item()
 
-                # 将 logits 转换为概率 (经过 softmax 取正类即 index=1 的概率)
+                # ?logits 转换为概?(经过 softmax 取正类即 index=1 的概?
                 probs = F.softmax(logits, dim=1)[:, 1]
                 # 获取预测类别
                 preds = torch.argmax(logits, dim=1)
 
-                # 收集用于计算指标的数据
+                # 收集用于计算指标的数?
                 all_labels.extend(batch['labels'].cpu().numpy())
                 all_preds.extend(preds.cpu().numpy())
                 all_probs.extend(probs.cpu().numpy())
 
         avg_loss = total_loss / len(dataloader)
 
-        # 计算各类指标 (zero_division=0 防止除0警告)
+        # 计算各类指标 (zero_division=0 防止?警告)
         acc = accuracy_score(all_labels, all_preds)
         f1 = f1_score(all_labels, all_preds, zero_division=0)
         prec = precision_score(all_labels, all_preds, zero_division=0)
         rec = recall_score(all_labels, all_preds, zero_division=0)
 
-        # 对于 ROC 和 PRC，需要模型输出的预测概率，而不是 0/1 标签
+        # 对于 ROC ?PRC，需要模型输出的预测概率，而不?0/1 标签
         try:
             auroc = roc_auc_score(all_labels, all_probs)
         except ValueError:
-            auroc = 0.0  # 防止 batch 内只有一个类别导致报错
+            auroc = 0.0  # 防止 batch 内只有一个类别导致报?
 
         auprc = average_precision_score(all_labels, all_probs)
         mcc = matthews_corrcoef(all_labels, all_preds)
@@ -109,7 +127,7 @@ class ImprovedDrugSynergyTrainer:
         print(f"Loss: {avg_loss:.4f} | ACC: {acc:.4f} | F1: {f1:.4f} | PREC: {prec:.4f} | Recall: {rec:.4f}")
         print(f"AUROC: {auroc:.4f} | AUPRC: {auprc:.4f} | MCC: {mcc:.4f} | KAPPA: {kappa:.4f}\n")
 
-        # 返回字典以便保存到 Excel
+        # 返回字典以便保存?Excel
         return {
             'Epoch': epoch,
             'Phase': phase,
@@ -125,18 +143,18 @@ class ImprovedDrugSynergyTrainer:
         }
 
     def train(self, num_epochs):
-        print("开始训练...")
-        all_metrics = []  # 用于收集所有 Epoch 的评估结果
+        print("ʼѵ")
+        all_metrics = []  # 用于收集所?Epoch 的评估结?
 
         for epoch in range(1, num_epochs + 1):
             start_time = time.time()
 
-            # 1. 训练一个 Epoch
+            # 1. 训练一?Epoch
             train_loss = self.train_epoch(epoch)
             print(
                 f"Epoch {epoch} 训练阶段完成 | 耗时: {time.time() - start_time:.1f}s | 平均 Train Loss: {train_loss:.4f}")
 
-            # 2. 在验证集上评估
+            # 2. 在验证集上评?
             val_metrics = self.evaluate(self.val_loader, epoch, phase="Validation")
             all_metrics.append(val_metrics)
 
@@ -147,4 +165,4 @@ class ImprovedDrugSynergyTrainer:
         # 3. 整个训练结束后，将所有验证指标保存到 Excel
         print("正在将评估指标保存到 Excel...")
         save_metrics_to_excel(all_metrics, filename='training_metrics.xlsx')
-        print("训练全部结束！")
+        print("Training completed.")
